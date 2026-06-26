@@ -1,0 +1,15 @@
+numpy
+pandas
+rdkit
+scipy
+scikit-learn
+python-Levenshtein
+joblib
+pathlib
+matplotlib
+pillow
+tqdm
+torch
+tensorboard
+biopython
+pulp
