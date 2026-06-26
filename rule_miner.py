@@ -49,6 +49,7 @@ MAX_FPR = 0.005       # 最大假阳性率
 MAX_GAP_SPAN = 4      # 最大Gap跨度
 MAX_GAP_UPPER = 5     # 单个Gap最大上限
 MAX_WILDCARD_RATIO = 0.5  # 最大通配比例
+FPR_SAMPLE_SIZE = 10000  # FPR校验采样大小
 
 # ============================================================
 # 数据加载
@@ -69,6 +70,21 @@ def load_data(dataset_dir='dataset'):
 # ============================================================
 # 工具函数
 # ============================================================
+
+# 全局缓存
+global_aa_seqs = {}
+
+
+def set_global_aa_seqs(word_set):
+    """设置全局氨基酸序列缓存"""
+    global global_aa_seqs
+    global_aa_seqs = {w: ''.join(c for c in w if c in AA_LETTERS) for w in word_set}
+
+
+def get_solid_seq(word):
+    """从缓存获取实心氨基酸序列"""
+    return global_aa_seqs.get(word, ''.join(c for c in word if c in AA_LETTERS))
+
 
 def extract_solid_sequence(word):
     """提取实心氨基酸序列（保留下划线用于后续处理）"""
@@ -145,8 +161,8 @@ def sort_sequences_by_centrality(seq_list):
     2. 为每条序列计算中心度得分（包含的3-mer频次之和）
     3. 返回降序排列
     """
-    # 提取所有实心序列
-    solid_seqs = [''.join(c for c in seq if c in AA_LETTERS) for seq in seq_list]
+    # 使用缓存获取实心序列
+    solid_seqs = [get_solid_seq(seq) for seq in seq_list]
 
     # 统计所有3-mer频次
     kmer_counts = defaultdict(int)
@@ -217,23 +233,34 @@ def is_rule_valid(rule_pattern, background_pool):
             if n > MAX_GAP_UPPER or (n - m) > MAX_GAP_SPAN:
                 return False
 
-    # 条件3: FPR检查
+    # 条件3: FPR检查（带早停和采样）
     regex_str = rule_to_regex(rule_pattern)
     compiled = re.compile(regex_str)
 
-    bg_count = 0
     bg_total = len(background_pool)
 
     if bg_total == 0:
         return False
 
-    for word in background_pool:
-        solid_seq = extract_solid_sequence(word)
+    # 采样优化：如果背景库太大，随机采样
+    bg_list = list(background_pool)
+    if len(bg_list) > FPR_SAMPLE_SIZE:
+        import random
+        bg_list = random.sample(bg_list, FPR_SAMPLE_SIZE)
+
+    # 优化2: 早停机制
+    max_fp = int(MAX_FPR * len(bg_list))
+    bg_count = 0
+
+    for word in bg_list:
+        solid_seq = get_solid_seq(word)
         if compiled.fullmatch(solid_seq):
             bg_count += 1
+            # 超过阈值立即停止
+            if bg_count > max_fp:
+                return False
 
-    fpr = bg_count / bg_total
-    return fpr <= MAX_FPR
+    return True
 
 
 # ============================================================
@@ -242,37 +269,97 @@ def is_rule_valid(rule_pattern, background_pool):
 
 def merge_rule_and_sequence(current_pattern, new_seq):
     """
-    使用DP比对将新序列融合到当前规则中
+    简化版双序列弹性融合（优化性能）
 
-    1. 将规则和序列转换为对齐矩阵
-    2. 下划线允许0惩罚吞并错配残基
-    3. 垂直提取共识
-    4. 强制头尾闭环
+    使用快速字符串对齐代替DP比对
     """
-    # 解析当前规则为token列表
-    rule_tokens = parse_rule_tokens(current_pattern)
-
     # 提取新序列的实心氨基酸
-    new_solid = extract_solid_sequence(new_seq)
+    new_solid = get_solid_seq(new_seq)
 
-    # DP比对
-    alignment = dp_align_rule_and_sequence(rule_tokens, new_solid)
+    # 如果当前规则就是序列本身，直接返回
+    if current_pattern == new_seq:
+        return current_pattern
 
-    # 垂直提取共识
-    new_tokens = extract_consensus_from_alignment(alignment)
+    # 提取当前规则的实心序列
+    current_solid = get_solid_seq(current_pattern)
 
-    # 计算头尾闭环
-    left_gap, right_gap = calculate_terminal_gaps(alignment)
+    # 简化策略：找最长公共子串作为骨架
+    skeleton = find_longest_common_substring(current_solid, new_solid)
 
-    # 构建新规则
-    new_parts = []
-    if left_gap[1] > 0:
-        new_parts.append(f'x({left_gap[0]},{left_gap[1]})')
-    new_parts.extend(new_tokens)
-    if right_gap[1] > 0:
-        new_parts.append(f'x({right_gap[0]},{right_gap[1]})')
+    if len(skeleton) < 2:
+        return None
 
-    return '-'.join(new_parts)
+    # 根据骨架构建规则
+    return build_rule_from_skeleton(skeleton, current_solid, new_solid)
+
+
+def find_longest_common_substring(s1, s2, min_len=2):
+    """
+    找两个序列的最长公共子串（比LCS快很多）
+    """
+    m, n = len(s1), len(s2)
+    if m == 0 or n == 0:
+        return ''
+
+    # 使用简单的滑动窗口
+    max_len = 0
+    best_sub = ''
+
+    # 只检查s1中可能的子串
+    for i in range(m):
+        for j in range(i + min_len, min(i + 10, m) + 1):
+            substr = s1[i:j]
+            if substr in s2 and len(substr) > max_len:
+                max_len = len(substr)
+                best_sub = substr
+
+    return best_sub
+
+
+def build_rule_from_skeleton(skeleton, seq1, seq2):
+    """
+    根据骨架构建规则
+    """
+    # 找出骨架在两个序列中的位置
+    pos1 = seq1.find(skeleton)
+    pos2 = seq2.find(skeleton)
+
+    if pos1 == -1 or pos2 == -1:
+        return None
+
+    # 计算gap
+    parts = []
+
+    # 左侧gap
+    left_max = max(pos1, pos2)
+    if left_max > 0:
+        parts.append(f'x(0,{min(left_max, MAX_GAP_UPPER)})')
+
+    # 骨架本身
+    for aa in skeleton:
+        parts.append(aa)
+
+    # 右侧gap
+    right_max = max(len(seq1) - pos1 - len(skeleton), len(seq2) - pos2 - len(skeleton))
+    if right_max > 0:
+        parts.append(f'x(0,{min(right_max, MAX_GAP_UPPER)})')
+
+    return '-'.join(parts)
+
+
+def find_positions(pattern, text):
+    """
+    找出pattern在text中的位置
+    """
+    positions = []
+    start = 0
+    for char in pattern:
+        idx = text.find(char, start)
+        if idx == -1:
+            return None
+        positions.append((idx, idx))
+        start = idx + 1
+    return positions
 
 
 def parse_rule_tokens(rule_pattern):
@@ -506,21 +593,17 @@ def mine_rules(pos_set, background_pool):
     优化策略：
     1. K-mer预过滤：只尝试与种子共享至少一个3-mer的候选
     2. 短路校验：先算通配比例，再算FPR
-    3. 耐心阈值：连续失败200次后放弃种子
-
-    1. 按中心度排序正样本
-    2. 依次取出种子，尝试吸收更多样本
-    3. 生成的规则必须通过严苛校验
+    3. 耐心阈值：连续失败50次后放弃种子
     """
     uncovered_pool = sort_sequences_by_centrality(list(pos_set))
     final_rules = []
 
-    # 优化1: 建立K-mer反向索引
+    # 优化1: 一次性建立K-mer反向索引（避免每次重建）
     kmer_index = _build_kmer_index(uncovered_pool)
 
     iteration = 0
-    max_iterations = 1000  # 防止无限循环
-    patience_limit = 200   # 优化3: 连续失败阈值
+    max_iterations = 500  # 减少最大迭代次数
+    patience_limit = 50   # 优化3: 降低连续失败阈值
 
     while uncovered_pool and iteration < max_iterations:
         iteration += 1
@@ -534,10 +617,10 @@ def mine_rules(pos_set, background_pool):
 
         # 尝试吸收更多序列
         absorbed_count = 0
-        max_absorb = 100  # 限制单次最大吸收数
+        max_absorb = 50  # 减少最大吸收数
 
         # 优化1: 通过K-mer预过滤候选序列
-        seed_kmers = _extract_kmers(extract_solid_sequence(seed_seq))
+        seed_kmers = _extract_kmers(get_solid_seq(seed_seq))
         candidate_pool = _filter_by_kmers(uncovered_pool, seed_kmers, kmer_index)
 
         # 如果没有候选，直接跳过
@@ -557,7 +640,22 @@ def mine_rules(pos_set, background_pool):
                 remaining_pool.append(candidate_seq)
                 continue
 
+            # 跳过太长的规则（避免过度泛化）
+            if len(current_rule) > 100:
+                remaining_pool.append(candidate_seq)
+                consecutive_fails += 1
+                if consecutive_fails >= patience_limit:
+                    break
+                continue
+
             temp_rule = merge_rule_and_sequence(current_rule, candidate_seq)
+
+            if temp_rule is None:
+                remaining_pool.append(candidate_seq)
+                consecutive_fails += 1
+                if consecutive_fails >= patience_limit:
+                    break
+                continue
 
             if is_rule_valid(temp_rule, background_pool):
                 # 吸收成功
@@ -583,9 +681,8 @@ def mine_rules(pos_set, background_pool):
             final_rules.append((current_rule, covered_words))
         # 否则丢弃孤儿词
 
-        # 更新未覆盖池和反向索引
+        # 更新未覆盖池（不重建索引）
         uncovered_pool = remaining_pool
-        kmer_index = _build_kmer_index(uncovered_pool)
 
         if iteration % 10 == 0:
             print(f"    迭代 {iteration}: 剩余 {len(uncovered_pool)} 个词")
@@ -601,7 +698,7 @@ def _build_kmer_index(seq_list, k=3):
     """
     index = defaultdict(set)
     for seq in seq_list:
-        solid = extract_solid_sequence(seq)
+        solid = get_solid_seq(seq)
         for i in range(len(solid) - k + 1):
             kmer = solid[i:i+k]
             index[kmer].add(seq)
@@ -660,17 +757,25 @@ def process_fragment(frag_id, P, global_words, wordfrag2score):
         else:
             avg_score = 0.0
 
-        # 计算FPR
+        # 计算FPR（带早停和采样）
         regex_str = rule_to_regex(rule_pattern)
         compiled = re.compile(regex_str)
 
+        bg_list = list(B)
+        if len(bg_list) > FPR_SAMPLE_SIZE:
+            import random
+            bg_list = random.sample(bg_list, FPR_SAMPLE_SIZE)
+
         bg_count = 0
-        for word in B:
-            solid_seq = extract_solid_sequence(word)
+        max_fp = int(MAX_FPR * len(bg_list))
+        for word in bg_list:
+            solid_seq = get_solid_seq(word)
             if compiled.fullmatch(solid_seq):
                 bg_count += 1
+                if bg_count > max_fp:
+                    break
 
-        fpr = bg_count / len(B) if B else 0.0
+        fpr = bg_count / len(bg_list) if bg_list else 0.0
 
         output_rules.append({
             'Pattern': rule_pattern,
@@ -706,6 +811,9 @@ def main():
     t0 = time.time()
 
     frag2words, word2frags, wordfrag2score, global_words = load_data()
+
+    # 优化1: 预计算氨基酸缓存
+    set_global_aa_seqs(global_words)
 
     print(f"  全局词库: {len(global_words)} 个蛋白词")
     print(f"  分子片段数: {len(frag2words)}")

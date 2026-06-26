@@ -2,83 +2,1260 @@
   {
     "Fragment_ID": "frag_2",
     "Total_Original_Words": 8106,
-    "Compression_Ratio": 0,
-    "Rules": [],
-    "Process_Time_s": 34.74
+    "Compression_Ratio": 213.32,
+    "Rules": [
+      {
+        "Pattern": "L-L-L-x(0,2)",
+        "Average_Score": 0.5282,
+        "Covered_Count": 51,
+        "Covered_Words": [
+          "LLLLLLLLL",
+          "ALLLLLLLV",
+          "VALLLLLLLM",
+          "MALLL_LLLL",
+          "LLLLL_LL",
+          "LLLLLLSLA",
+          "LLLLL_L",
+          "LLLLLL",
+          "VVA_LLLLL",
+          "TLLLLLS",
+          "ALLLLA_LG",
+          "LLLLLP",
+          "CSLLLLG_AGS",
+          "LAALLLLP",
+          "L_LLL_L",
+          "LL_LL_L",
+          "L_LLLL",
+          "LLLLL",
+          "ILLLLGG",
+          "ILLLLVF",
+          "LLSSLL_LL",
+          "SILLLLS",
+          "LLLLP_LGL",
+          "LLL_LSLT",
+          "MK_LLLLA",
+          "I_LLLL_S",
+          "ALLLLWLS",
+          "VLLLLHGG",
+          "A_LLLLQ",
+          "ALLLLW",
+          "LIL_LLL",
+          "LLLLVWV",
+          "LLLLA",
+          "LLLL_V",
+          "VLL_LL",
+          "LLLL_S",
+          "LLLLI",
+          "LLL_LT",
+          "MKKLL_LL",
+          "L_LLLP",
+          "LCLLLL",
+          "N_LL_LL",
+          "LL_LL_E",
+          "LL_LL_N",
+          "QLLL_L",
+          "LLLLW_S",
+          "LLLLW",
+          "M_LL_LL",
+          "M_LLLL",
+          "LLLVAAL",
+          "LLLAL"
+        ],
+        "False_Positive_Rate": 0.0016
+      },
+      {
+        "Pattern": "x(0,2)-L-L-L",
+        "Average_Score": 0.5569,
+        "Covered_Count": 51,
+        "Covered_Words": [
+          "LLLLVLAVGL",
+          "SALLLVLGLL",
+          "LLLVVLSC",
+          "LLL_VLG",
+          "DLLLVAT",
+          "AL_LLA",
+          "LL_G_LLL",
+          "L_L_LGLL",
+          "LALL_L",
+          "ALL_LV",
+          "A_IALL_L",
+          "AL_LL_G",
+          "S_LL_LA",
+          "FL_LLS_L",
+          "LLLA_GG",
+          "L_L_LVGN",
+          "VLLLG",
+          "EV_VLLL",
+          "L_LLVEGV",
+          "FLLLG",
+          "V_LLLK",
+          "TLLL_V",
+          "LL_L_AT",
+          "SALLL",
+          "LL_LTLA",
+          "V_LL_LD",
+          "LLLA_Q_E",
+          "WT_ALLL",
+          "L_LLA_Q",
+          "L_LPLL_L",
+          "TLL_LI",
+          "LLLGM_L",
+          "ELLLI",
+          "SLL_L_R",
+          "LLLS_G",
+          "MV_LLL",
+          "LLLSA",
+          "L_L_LGR",
+          "LLLSV",
+          "DIL_L_L",
+          "LL_L_IET",
+          "FILL_L",
+          "TLL_LP",
+          "GF_LLL",
+          "G_FLLL",
+          "M_L_LLI",
+          "CS_LLL",
+          "LLL_SM",
+          "V_YF_LLL",
+          "F_LLL_Q",
+          "TFL_LL"
+        ],
+        "False_Positive_Rate": 0.0026
+      },
+      {
+        "Pattern": "L-L-A-x(0,3)",
+        "Average_Score": 0.5482,
+        "Covered_Count": 51,
+        "Covered_Words": [
+          "GALLLALVILL",
+          "DLLLALAL",
+          "VLALLLAF",
+          "A_LLLAAL",
+          "LLLAL_V_S",
+          "L_IVLLLA",
+          "PLVLLALV",
+          "L_LLA_CC",
+          "LLAAAA_V",
+          "SLLAIAL",
+          "LSLLA_L",
+          "GL_LA_LV",
+          "LLPLLA_L",
+          "MRKSLLAIL",
+          "PL_LA_AA",
+          "KGLLA_L",
+          "SLLAL",
+          "LL_ALA",
+          "LLAIAVD",
+          "L_EALL_A",
+          "L_GILLA_R",
+          "LL_ALG",
+          "FLLA_A",
+          "DLL_AA",
+          "L_LA_LR",
+          "LLA_AL",
+          "RAL_LA",
+          "LL_A_IA",
+          "NLLAA",
+          "L_LAIA",
+          "LLAGVA_A",
+          "N_ALLA",
+          "LLAA_G",
+          "LLA_AG",
+          "LL_AIGL",
+          "G_SLLA",
+          "VIL_L_A",
+          "YVLLA",
+          "GL_L_AG",
+          "AS_LL_A",
+          "ILLAD",
+          "SSL_LA",
+          "I_L_LAQE",
+          "S_GLL_A",
+          "YLL_AV",
+          "AD_LLA",
+          "LLAG_L_C",
+          "SFLL_A",
+          "NLLAS",
+          "NLL_A_S",
+          "LL_ASSV"
+        ],
+        "False_Positive_Rate": 0.0022
+      },
+      {
+        "Pattern": "L-L-L-x(0,2)",
+        "Average_Score": 0.5421,
+        "Covered_Count": 24,
+        "Covered_Words": [
+          "IFNLAVADLLLL",
+          "IVNLAVADLLLTS",
+          "NLTLADLLL",
+          "L_VDLLL_D",
+          "VDLLL",
+          "WG_LL_L",
+          "LLLFV_G",
+          "LLLTD",
+          "GDL_LL",
+          "LLLP_G",
+          "LLLCLI",
+          "LLLN_E_G",
+          "LA_QLLL",
+          "MKKL_L_L",
+          "TSRLLL",
+          "LL_L_FF",
+          "LL_LNG",
+          "L_C_LLL",
+          "LCL_LL",
+          "SQLLL",
+          "LLL_F_W",
+          "IY_LLL",
+          "LLL_ML",
+          "LLLWL"
+        ],
+        "False_Positive_Rate": 0.0021
+      },
+      {
+        "Pattern": "V-L-L-x(0,3)",
+        "Average_Score": 0.5756,
+        "Covered_Count": 21,
+        "Covered_Words": [
+          "SEGPVLLLLHGG",
+          "VLL_LIAL_V",
+          "V_L_LLGPV",
+          "VIV_LLLD",
+          "V_LVLLT_L",
+          "NL_VVL_LV",
+          "LVLLSTAL",
+          "LIVLLGS",
+          "VLLVLH",
+          "AAVVLLT",
+          "VL_VLLE",
+          "LSLTV_LL_E",
+          "L_VLLG",
+          "VLLGG_P",
+          "III_VVLLE",
+          "G_LFVLLV",
+          "DVLLGIK",
+          "QVLLGA",
+          "VVLLT_S",
+          "QIVLLG",
+          "VLLSA_L"
+        ],
+        "False_Positive_Rate": 0.002
+      },
+      {
+        "Pattern": "x(0,1)-A-L-L-x(0,2)",
+        "Average_Score": 0.5446,
+        "Covered_Count": 21,
+        "Covered_Words": [
+          "ALLLGRG",
+          "NVKALLLNRDG",
+          "V_IPALLLT",
+          "VLALLASI",
+          "LA_LL_VV",
+          "YLALLV",
+          "T_LPLALLP",
+          "AL_LVVV",
+          "ALLV_L",
+          "A_LLVS_L",
+          "LALLPV",
+          "A_A_ALLP",
+          "R_ALLDTGA",
+          "S_TALL_G",
+          "LAL_L_C",
+          "ALLIGV",
+          "M_VALLG",
+          "EALLDT_AD",
+          "AALLPGA",
+          "SLVA_L_L",
+          "EALLDT"
+        ],
+        "False_Positive_Rate": 0.0017
+      },
+      {
+        "Pattern": "x(0,1)-L-A-x(0,2)",
+        "Average_Score": 0.6019,
+        "Covered_Count": 12,
+        "Covered_Words": [
+          "ALVLLAAAVSC_A",
+          "L_LAAAASI",
+          "VLAALAA",
+          "GLALAAR",
+          "ILNLAAADF",
+          "GNLAAADL",
+          "T_ASA_LAAG",
+          "GLVLAAC",
+          "SAGALAAG",
+          "NLAAADL",
+          "LA_L_VL",
+          "S_LAA_A"
+        ],
+        "False_Positive_Rate": 0.0051
+      },
+      {
+        "Pattern": "A-L-x(0,3)",
+        "Average_Score": 0.6243,
+        "Covered_Count": 10,
+        "Covered_Words": [
+          "TLALALALA",
+          "L_ALAL_L",
+          "GVLAALAAYCL",
+          "IVSLALADI",
+          "ILA_LAL",
+          "ASLALA_I",
+          "FSLALA_I",
+          "L_AL_LG",
+          "LALLR",
+          "AL_ALG"
+        ],
+        "False_Positive_Rate": 0.0038
+      },
+      {
+        "Pattern": "x(0,2)-L-S-L",
+        "Average_Score": 0.6442,
+        "Covered_Count": 7,
+        "Covered_Words": [
+          "ILLLSLRR",
+          "ILILSLSLAL",
+          "VVLSLALG",
+          "V_IILL_SLVI",
+          "LSLAL_S",
+          "LS_L_LIG",
+          "A_LL_SL"
+        ],
+        "False_Positive_Rate": 0.0006
+      },
+      {
+        "Pattern": "V-L-V-x(0,3)",
+        "Average_Score": 0.6209,
+        "Covered_Count": 7,
+        "Covered_Words": [
+          "LLV_LV_LF",
+          "ISLSVLVLL",
+          "LVLV_ILL",
+          "LLIVLVAA",
+          "CLLVLV",
+          "S_SILVL_V",
+          "VLVL_GG"
+        ],
+        "False_Positive_Rate": 0.0015
+      },
+      {
+        "Pattern": "L-L-L-x(0,3)",
+        "Average_Score": 0.5488,
+        "Covered_Count": 6,
+        "Covered_Words": [
+          "MELTELLLVV",
+          "HLEVTELLLKKEN",
+          "ELLLV_A",
+          "ATLLLV",
+          "LLLI_K_A",
+          "LL_LNN_V"
+        ],
+        "False_Positive_Rate": 0.0042
+      },
+      {
+        "Pattern": "x(0,3)-L-A-I-x(0,3)",
+        "Average_Score": 0.6683,
+        "Covered_Count": 6,
+        "Covered_Words": [
+          "SVANLLAIAIER",
+          "LLAIAIDRY",
+          "SLL_AIERHL",
+          "IALA_IL_L",
+          "LNLAISDLL",
+          "ILNLAIADE"
+        ],
+        "False_Positive_Rate": 0.0032
+      },
+      {
+        "Pattern": "x(0,3)-V-L-A-x(0,3)",
+        "Average_Score": 0.6995,
+        "Covered_Count": 5,
+        "Covered_Words": [
+          "IGGG_VLA_AA",
+          "ALLVLAT_V",
+          "LLV_LAL",
+          "FLL_VLA",
+          "VIAVLAIL_N"
+        ],
+        "False_Positive_Rate": 0.0042
+      },
+      {
+        "Pattern": "x(0,2)-T-L-L-x(0,1)",
+        "Average_Score": 0.6823,
+        "Covered_Count": 4,
+        "Covered_Words": [
+          "HHVVTLLLI",
+          "TLLLIQ",
+          "LTLLLC",
+          "LVTLL_V"
+        ],
+        "False_Positive_Rate": 0.0015
+      },
+      {
+        "Pattern": "A-A-A-x(0,4)",
+        "Average_Score": 0.5481,
+        "Covered_Count": 4,
+        "Covered_Words": [
+          "ALGAAALAL",
+          "NRLAAALK_EA",
+          "G_GAGAAA_A",
+          "AAAAALK"
+        ],
+        "False_Positive_Rate": 0.0012
+      },
+      {
+        "Pattern": "x(0,4)-L-A-V-x(0,3)",
+        "Average_Score": 0.559,
+        "Covered_Count": 4,
+        "Covered_Words": [
+          "LCLA_LAVALFQV",
+          "LLNLAVADIL",
+          "GFLAVVILV",
+          "YLLNLAVADE"
+        ],
+        "False_Positive_Rate": 0.0048
+      },
+      {
+        "Pattern": "x(0,3)-E-A-L-L-D-T-x(0,2)",
+        "Average_Score": 0.6045,
+        "Covered_Count": 4,
+        "Covered_Words": [
+          "K_LKEALLDTGA_G",
+          "T_QLKEALLDTGADD",
+          "EALLDTGADDTV",
+          "GG_KEALLDT_A"
+        ],
+        "False_Positive_Rate": 0.0
+      },
+      {
+        "Pattern": "x(0,4)-L-A-L",
+        "Average_Score": 0.7205,
+        "Covered_Count": 4,
+        "Covered_Words": [
+          "VSGNLALIIIIL",
+          "I_LGLA_LI",
+          "VGAFLALA",
+          "LIVSLA_L"
+        ],
+        "False_Positive_Rate": 0.0022
+      },
+      {
+        "Pattern": "L-A-L-x(0,4)",
+        "Average_Score": 0.5852,
+        "Covered_Count": 4,
+        "Covered_Words": [
+          "LLALVAGEA",
+          "TILLALV",
+          "F_VSLALAD",
+          "LAL_VGG_L"
+        ],
+        "False_Positive_Rate": 0.0022
+      },
+      {
+        "Pattern": "x(0,1)-N-L-A-L-x(0,3)",
+        "Average_Score": 0.578,
+        "Covered_Count": 4,
+        "Covered_Words": [
+          "FLLNLALA",
+          "IINLALADL",
+          "LLNLALSD",
+          "FNLALADA"
+        ],
+        "False_Positive_Rate": 0.0002
+      },
+      {
+        "Pattern": "x(0,2)-L-L-G-x(0,1)",
+        "Average_Score": 0.7166,
+        "Covered_Count": 3,
+        "Covered_Words": [
+          "GLLGNLL_L",
+          "L_VFGLLGNGLAL",
+          "Q_LLLG_G"
+        ],
+        "False_Positive_Rate": 0.0025
+      },
+      {
+        "Pattern": "x(0,4)-V-G-N-x(0,4)",
+        "Average_Score": 0.4779,
+        "Covered_Count": 3,
+        "Covered_Words": [
+          "VI_LVGLVGNIIAL",
+          "VFVIGLVGNILVV",
+          "LLGVVGNSLVI"
+        ],
+        "False_Positive_Rate": 0.0009
+      },
+      {
+        "Pattern": "S-L-L-x(0,2)",
+        "Average_Score": 0.4767,
+        "Covered_Count": 3,
+        "Covered_Words": [
+          "L_SVFSLLAI",
+          "SSLLV_V",
+          "SLLV_L"
+        ],
+        "False_Positive_Rate": 0.0005
+      },
+      {
+        "Pattern": "x(0,2)-L-G-L-x(0,2)",
+        "Average_Score": 0.6242,
+        "Covered_Count": 3,
+        "Covered_Words": [
+          "ADFLLGLATVPG",
+          "DGLLGLAF",
+          "LVL_GLVF"
+        ],
+        "False_Positive_Rate": 0.0032
+      },
+      {
+        "Pattern": "x(0,1)-L-V-V-x(0,2)",
+        "Average_Score": 0.5854,
+        "Covered_Count": 3,
+        "Covered_Words": [
+          "VGNILVVLV",
+          "LIALVVGIV_I",
+          "LLVVLI"
+        ],
+        "False_Positive_Rate": 0.0014
+      },
+      {
+        "Pattern": "x(0,4)-V-G-A-G-x(0,4)",
+        "Average_Score": 0.5304,
+        "Covered_Count": 3,
+        "Covered_Words": [
+          "GV_GVGAGLAYLIR",
+          "SVAVVGA_GLA",
+          "DCVIVGAGISGL"
+        ],
+        "False_Positive_Rate": 0.0004
+      },
+      {
+        "Pattern": "x(0,4)-L-L-L-W-x(0,4)",
+        "Average_Score": 0.537,
+        "Covered_Count": 2,
+        "Covered_Words": [
+          "TLLFLLLWGPYV",
+          "VRL_LLW"
+        ],
+        "False_Positive_Rate": 0.0004
+      },
+      {
+        "Pattern": "x(0,4)-L-L-L-T-x(0,1)",
+        "Average_Score": 0.7551,
+        "Covered_Count": 2,
+        "Covered_Words": [
+          "LVVMLLLT",
+          "G_L_LLTN"
+        ],
+        "False_Positive_Rate": 0.0009
+      },
+      {
+        "Pattern": "x(0,3)-A-L-R-R-I-L-L-S-S-M-x(0,3)",
+        "Average_Score": 0.5778,
+        "Covered_Count": 2,
+        "Covered_Words": [
+          "HTL_ALRRILLSSMPGC",
+          "GNALRRILLSSMPGC"
+        ],
+        "False_Positive_Rate": 0.0
+      },
+      {
+        "Pattern": "x(0,2)-T-L-G-V-I-S-L-L-E-N-x(0,4)",
+        "Average_Score": 0.5278,
+        "Covered_Count": 2,
+        "Covered_Words": [
+          "FLTLGVISLLE_NKNL_W",
+          "VTLGVISLLENI"
+        ],
+        "False_Positive_Rate": 0.0
+      },
+      {
+        "Pattern": "x(0,4)-S-G-G-G-x(0,4)",
+        "Average_Score": 0.7284,
+        "Covered_Count": 2,
+        "Covered_Words": [
+          "LVVLSGGGTSGR",
+          "LGASGGGG"
+        ],
+        "False_Positive_Rate": 0.0005
+      },
+      {
+        "Pattern": "x(0,1)-A-V-G-I-G-A-L-F-L-G-x(0,4)",
+        "Average_Score": 0.4039,
+        "Covered_Count": 2,
+        "Covered_Words": [
+          "RAVGIGALFLGFLGA",
+          "AVGIGALFLGFLG"
+        ],
+        "False_Positive_Rate": 0.0
+      },
+      {
+        "Pattern": "x(0,3)-A-V-I-G-A-G-V-x(0,4)",
+        "Average_Score": 0.5595,
+        "Covered_Count": 2,
+        "Covered_Words": [
+          "MKIAVIGAGV_GLA",
+          "VAVIGAGVSGLA"
+        ],
+        "False_Positive_Rate": 0.0002
+      },
+      {
+        "Pattern": "x(0,2)-V-L-L-S-I-x(0,4)",
+        "Average_Score": 0.6677,
+        "Covered_Count": 2,
+        "Covered_Words": [
+          "VVLLSIITLA",
+          "LKVLLSIGGW_Y"
+        ],
+        "False_Positive_Rate": 0.0001
+      },
+      {
+        "Pattern": "x(0,4)-C-I-S-V-D-R-Y-L-A-x(0,4)",
+        "Average_Score": 0.6462,
+        "Covered_Count": 2,
+        "Covered_Words": [
+          "AFLCCISVDRYLAVAHP",
+          "L_ACISVDRYLAIV"
+        ],
+        "False_Positive_Rate": 0.0
+      },
+      {
+        "Pattern": "x(0,1)-K-Y-I-L-V-T-G-G-V-I-x(0,2)",
+        "Average_Score": 0.5324,
+        "Covered_Count": 2,
+        "Covered_Words": [
+          "MKYILVTGGVIS_I",
+          "KYILVTGGVI_G"
+        ],
+        "False_Positive_Rate": 0.0
+      },
+      {
+        "Pattern": "x(0,4)-R-D-L-L-D-T-A-S-A-x(0,2)",
+        "Average_Score": 0.3343,
+        "Covered_Count": 2,
+        "Covered_Words": [
+          "RDLLDTASALY",
+          "FPSIRDLLDTASA"
+        ],
+        "False_Positive_Rate": 0.0
+      },
+      {
+        "Pattern": "x(0,4)-A-L-V-x(0,2)",
+        "Average_Score": 0.5241,
+        "Covered_Count": 2,
+        "Covered_Words": [
+          "LAVAALVRA",
+          "VLIALVGG"
+        ],
+        "False_Positive_Rate": 0.0036
+      }
+    ],
+    "Process_Time_s": 11.95
   },
   {
     "Fragment_ID": "frag_3",
     "Total_Original_Words": 5814,
-    "Compression_Ratio": 0,
-    "Rules": [],
-    "Process_Time_s": 40.11
-  },
-  {
-    "Fragment_ID": "frag_6",
-    "Total_Original_Words": 603,
-    "Compression_Ratio": 0,
-    "Rules": [],
-    "Process_Time_s": 43.32
-  },
-  {
-    "Fragment_ID": "frag_7",
-    "Total_Original_Words": 1967,
-    "Compression_Ratio": 0,
-    "Rules": [],
-    "Process_Time_s": 37.43
-  },
-  {
-    "Fragment_ID": "frag_8",
-    "Total_Original_Words": 166,
-    "Compression_Ratio": 0,
-    "Rules": [],
-    "Process_Time_s": 30.73
-  },
-  {
-    "Fragment_ID": "frag_11",
-    "Total_Original_Words": 419,
-    "Compression_Ratio": 0,
-    "Rules": [],
-    "Process_Time_s": 33.7
-  },
-  {
-    "Fragment_ID": "frag_12",
-    "Total_Original_Words": 739,
-    "Compression_Ratio": 0,
-    "Rules": [],
-    "Process_Time_s": 31.63
-  },
-  {
-    "Fragment_ID": "frag_14",
-    "Total_Original_Words": 2096,
-    "Compression_Ratio": 0,
-    "Rules": [],
-    "Process_Time_s": 36.47
-  },
-  {
-    "Fragment_ID": "frag_15",
-    "Total_Original_Words": 2267,
-    "Compression_Ratio": 0,
-    "Rules": [],
-    "Process_Time_s": 39.45
-  },
-  {
-    "Fragment_ID": "frag_16",
-    "Total_Original_Words": 179,
-    "Compression_Ratio": 179.0,
+    "Compression_Ratio": 187.55,
     "Rules": [
       {
-        "Pattern": "x(0,2)-S-G-Q-F-G-x(1,1)",
-        "Average_Score": 0.5737,
+        "Pattern": "x(0,3)-L-L-L",
+        "Average_Score": 0.5464,
+        "Covered_Count": 51,
+        "Covered_Words": [
+          "VLLLLLLLLLA",
+          "LLLLLLLLL",
+          "ALLLLLLLV",
+          "LLLLLLL_R",
+          "AALLLLL",
+          "LLLLLSL",
+          "ALLLLL",
+          "LL_LLL_A",
+          "L_LLL_LG",
+          "GLLLLLW",
+          "ALALLLL",
+          "LAALLLLP",
+          "L_LLLL",
+          "LLLLL",
+          "ILLLLGG",
+          "SILLLLS",
+          "LLL_LSLT",
+          "LLLLATGL",
+          "ALLLLWLS",
+          "I_LLLL_S",
+          "LLLLVWV",
+          "ALLLL",
+          "LL_LLG",
+          "TISD_LLLL",
+          "FLLLL",
+          "LLLLP",
+          "L_LLLP",
+          "LLL_LFR",
+          "DLLLL",
+          "LLLLF",
+          "R_LLLL",
+          "LC_LLLL",
+          "LL_LL_E",
+          "LLLLW",
+          "M_LLLL",
+          "LL_LL_M",
+          "LLLAAL",
+          "LLLALG",
+          "LALL_L",
+          "AL_LL_G",
+          "VLLLG",
+          "FLLLG",
+          "LLL_VSD",
+          "PLILLL",
+          "ALLL_P",
+          "LLLIGA",
+          "LLLVF",
+          "GALLL",
+          "FALL_L",
+          "G_LL_LI",
+          "MKALLL"
+        ],
+        "False_Positive_Rate": 0.0035
+      },
+      {
+        "Pattern": "L-L-L-x(0,2)",
+        "Average_Score": 0.5941,
+        "Covered_Count": 40,
+        "Covered_Words": [
+          "LLLLVLAVGL",
+          "R_LLLVLA",
+          "LLLVVLSC",
+          "LLLALM_V",
+          "RLLLA",
+          "LL_L_AT",
+          "SALLL",
+          "LLLGM_L",
+          "LLLSV",
+          "WALLL",
+          "LL_LTLA",
+          "G_L_LLTN",
+          "P_VLLL",
+          "SLL_L_R",
+          "IP_ILLL",
+          "ATGLLL",
+          "CLLL_I",
+          "LLLI_E",
+          "LLL_SM",
+          "FG_LL_L",
+          "SSTLLL",
+          "FILL_L",
+          "LL_LF_L",
+          "V_YF_LLL",
+          "LLLK_P",
+          "LLLTG",
+          "VPLLL",
+          "LLLP_G",
+          "LLLRL",
+          "LLLPTD",
+          "FNTL_LL",
+          "DLLL_C",
+          "TELLL",
+          "L_LLRH",
+          "LLL_F_W",
+          "LLL_DS_E",
+          "LLL_ML",
+          "L_LLW_AV",
+          "L_C_LLL",
+          "LLLQG"
+        ],
+        "False_Positive_Rate": 0.0023
+      },
+      {
+        "Pattern": "x(0,3)-L-A",
+        "Average_Score": 0.5889,
+        "Covered_Count": 38,
+        "Covered_Words": [
+          "TLALALALA",
+          "VLTLLALAI",
+          "FLGLLALTV",
+          "LALVLV",
+          "YLALLV",
+          "VVLSLALG",
+          "GLALAAR",
+          "ASLALA_I",
+          "FSLALA_I",
+          "R_ALALL",
+          "L_AL_LG",
+          "LALLPV",
+          "LA_L_VL",
+          "ILALVTII",
+          "LALVGAA",
+          "LNLALA",
+          "ITTLALL",
+          "LG_ALA_L",
+          "LAL_L_C",
+          "LALIL_P",
+          "ALA_L_RY",
+          "AL_ALG",
+          "TRAL_AL",
+          "R_ALA_L",
+          "L_ALVG",
+          "K_LAL_A",
+          "LALA_P",
+          "Q_SILAL",
+          "IDLALS",
+          "LALVW",
+          "L_AL_DL",
+          "CT_LAL_S",
+          "WALA_A",
+          "TALAV",
+          "G_LALK",
+          "A_LA_IR",
+          "RALAG",
+          "RR_ALA"
+        ],
+        "False_Positive_Rate": 0.0044
+      },
+      {
+        "Pattern": "A-A-x(0,3)",
+        "Average_Score": 0.6092,
+        "Covered_Count": 38,
+        "Covered_Words": [
+          "ALVLLAAAVSC_A",
+          "L_QESLAAAASI",
+          "SLVLAA_L",
+          "A_LA_AAL",
+          "ILNLAAADF",
+          "GNLAAADL",
+          "AALAAS",
+          "AIATLAACYNN",
+          "LDLAAL",
+          "S_LAA_A",
+          "LAAADIA",
+          "IVLAAC",
+          "Q_HRDLAAR",
+          "LA_ALS",
+          "Y_F_EVLAA",
+          "LA_AA_P",
+          "V_L_AAHCF",
+          "VAALV",
+          "FLAAL",
+          "AALVPR",
+          "AA_LV_G",
+          "V_LAA_I",
+          "F_AAA_A",
+          "V_GAA_A",
+          "V_R_LAA",
+          "LAAIF",
+          "LA_AR_K",
+          "A_AVGG",
+          "AAAT_N",
+          "LA_A_HD",
+          "W_SAA_A",
+          "AAVAW",
+          "E_AAV_S",
+          "ISAAV",
+          "E_Q_AAA",
+          "WI_AA_V",
+          "AAVPS",
+          "AAVKD"
+        ],
+        "False_Positive_Rate": 0.0033
+      },
+      {
+        "Pattern": "x(0,3)-L-V",
+        "Average_Score": 0.5742,
+        "Covered_Count": 37,
+        "Covered_Words": [
+          "VSLAVADLLVATLVM",
+          "AVADLLVATLV",
+          "VA_LLVA",
+          "RMLLVIVV_F",
+          "SSLLV_V",
+          "M_VLLVF_L",
+          "R_L_LVLR",
+          "LILPLLV",
+          "LLVAALP",
+          "LLVLS",
+          "GQL_LVL",
+          "IV_LLV_D",
+          "YL_LVL",
+          "W_RALL_V",
+          "DHGVLLV",
+          "FL_LV_A",
+          "GVLLV",
+          "LLVAA_G",
+          "PVL_LV",
+          "LLVTIG",
+          "LLVID",
+          "LLV_SL",
+          "LL_VF_V",
+          "LLVDRIT",
+          "YWLLVEGV",
+          "SE_LL_VK",
+          "TK_LLV_H",
+          "L_LVFQ",
+          "W_LL_VP",
+          "LLVNIP",
+          "PMLLV",
+          "LLVWT_E",
+          "ILVAH",
+          "VVSLV",
+          "TLV_NL",
+          "NTLV_C",
+          "PTTLV"
+        ],
+        "False_Positive_Rate": 0.0051
+      },
+      {
+        "Pattern": "x(0,3)-L-V",
+        "Average_Score": 0.5932,
+        "Covered_Count": 33,
+        "Covered_Words": [
+          "VLVLLVLG_C",
+          "LVLLSTAL",
+          "CLLVLV",
+          "LLVLIA_G",
+          "IFLLV_L",
+          "VLLVLH",
+          "VVIILV_L",
+          "LV_LL_V",
+          "LV_LVL",
+          "LVL_GLVF",
+          "VLV_LLC_L",
+          "L_VLVV_T",
+          "L_VLLG",
+          "L_AIL_VL",
+          "YL_VL_LI",
+          "AALVLG",
+          "VLVL_GG",
+          "LIL_VL",
+          "S_VL_VLT",
+          "FLVLIFSS",
+          "AVWVLV_L",
+          "LVLI_L",
+          "V_LV_LY",
+          "P_LVLV",
+          "GLEGLVLK",
+          "EVL_VL",
+          "LVLIFS",
+          "K_IL_VL",
+          "AVLVV",
+          "G_VLVV",
+          "GVLVV",
+          "FVL_V_H",
+          "IMVLV"
+        ],
+        "False_Positive_Rate": 0.005
+      },
+      {
+        "Pattern": "x(0,2)-L-A-x(0,1)",
+        "Average_Score": 0.5269,
+        "Covered_Count": 28,
+        "Covered_Words": [
+          "LLLAAVLLG",
+          "VALVLLAAAV",
+          "LLAA_L_LV",
+          "L_LVLLA_P",
+          "SILALLA",
+          "LLALL_P",
+          "VGLLAA_T",
+          "AAL_LA",
+          "VLLAA",
+          "LLALIT",
+          "L_EALL_A",
+          "LLALS",
+          "A_LLA_E",
+          "RAL_LA",
+          "NLLAA",
+          "LL_AV_PL",
+          "G_SLLA",
+          "VIL_L_A",
+          "GILLA",
+          "YVLLA",
+          "SLLA_E",
+          "VL_AAL",
+          "LAALR",
+          "AVLAV",
+          "L_A_VLI",
+          "LLAG_T",
+          "AT_LAA",
+          "VMLA_A"
+        ],
+        "False_Positive_Rate": 0.0051
+      },
+      {
+        "Pattern": "x(0,2)-D-L-x(0,1)",
+        "Average_Score": 0.5452,
+        "Covered_Count": 11,
+        "Covered_Words": [
+          "IFNLAVADLLLL",
+          "IVNLAVADLLLTS",
+          "VADLLV_IL_L",
+          "ALADLSVAV",
+          "R_LSLAD_LV",
+          "L_DLLG",
+          "ID_LLA",
+          "I_DLLA",
+          "VADLI",
+          "DL_LDNS",
+          "T_AD_LK"
+        ],
+        "False_Positive_Rate": 0.0022
+      },
+      {
+        "Pattern": "x(0,3)-L-L-G-x(0,2)",
+        "Average_Score": 0.5417,
+        "Covered_Count": 8,
+        "Covered_Words": [
+          "L_VFGLLGNGLAL",
+          "FVVSLLGNV",
+          "VALLGTVW",
+          "I_LLGDIGG",
+          "ALL_GAV",
+          "A_A_LLG",
+          "EDDG_LLGL",
+          "TEH_LLGL_L"
+        ],
+        "False_Positive_Rate": 0.0051
+      },
+      {
+        "Pattern": "x(0,3)-G-G-G-x(0,2)",
+        "Average_Score": 0.5362,
+        "Covered_Count": 6,
+        "Covered_Words": [
+          "LLGGGFALA_E",
+          "AGGGFLAAL",
+          "VIVVGGGISG",
+          "GGGGGG",
+          "LGASGGGG",
+          "LSIGGGAG"
+        ],
+        "False_Positive_Rate": 0.0033
+      },
+      {
+        "Pattern": "x(0,2)-L-A-I-x(0,4)",
+        "Average_Score": 0.6349,
+        "Covered_Count": 6,
+        "Covered_Words": [
+          "SVANLLAIAIER",
+          "SLLAIAIER",
+          "LLAIAIDRY",
+          "GLV_LAISR",
+          "AIAVLAIL_N",
+          "LNLAISDLL"
+        ],
+        "False_Positive_Rate": 0.0023
+      },
+      {
+        "Pattern": "x(0,2)-L-L-L-A-x(0,1)",
+        "Average_Score": 0.5757,
+        "Covered_Count": 5,
+        "Covered_Words": [
+          "LAAADLLLAL",
+          "DLLLALAL",
+          "VL_LLAIAL",
+          "A_LLLAAL",
+          "TALLL_A_L"
+        ],
+        "False_Positive_Rate": 0.001
+      },
+      {
+        "Pattern": "L-L-L-x(0,3)",
+        "Average_Score": 0.6609,
+        "Covered_Count": 5,
+        "Covered_Words": [
+          "VLL_LIAL_V",
+          "VLLLN_IA_G",
+          "TLLLIQ",
+          "L_LLEKL_E",
+          "LLLMSL"
+        ],
+        "False_Positive_Rate": 0.0039
+      },
+      {
+        "Pattern": "x(0,2)-L-S-L-x(0,1)",
+        "Average_Score": 0.5736,
+        "Covered_Count": 5,
+        "Covered_Words": [
+          "V_IILL_SLVI",
+          "V_ALLSLA",
+          "VSILLSLT",
+          "LFLSLGLV",
+          "VLL_SLA"
+        ],
+        "False_Positive_Rate": 0.0013
+      },
+      {
+        "Pattern": "x(0,3)-L-A-L-A-D",
+        "Average_Score": 0.4567,
+        "Covered_Count": 3,
+        "Covered_Words": [
+          "VSLALADLVVA",
+          "FNLALADA",
+          "IFNLALAD"
+        ],
+        "False_Positive_Rate": 0.0
+      },
+      {
+        "Pattern": "x(0,1)-L-V-L-x(0,4)",
+        "Average_Score": 0.5013,
+        "Covered_Count": 3,
+        "Covered_Words": [
+          "LLV_LV_LF",
+          "M_LVLAVL_A",
+          "ALV_LAVSR"
+        ],
+        "False_Positive_Rate": 0.0051
+      },
+      {
+        "Pattern": "x(0,2)-G-L-L-x(0,3)",
+        "Average_Score": 0.5833,
+        "Covered_Count": 3,
+        "Covered_Words": [
+          "ADQ_A_RVGLLWVLVLN",
+          "LAVSRVGLLWVI",
+          "LGLLSVP"
+        ],
+        "False_Positive_Rate": 0.0041
+      },
+      {
+        "Pattern": "x(0,3)-A-A-A-L-x(0,3)",
+        "Average_Score": 0.619,
+        "Covered_Count": 3,
+        "Covered_Words": [
+          "AAAAALK",
+          "AAAALV",
+          "NRLAAALK_EA"
+        ],
+        "False_Positive_Rate": 0.0001
+      },
+      {
+        "Pattern": "x(0,3)-L-L-L-G-x(0,4)",
+        "Average_Score": 0.6468,
         "Covered_Count": 2,
         "Covered_Words": [
-          "LGSGQFGE",
-          "SGQFGV"
+          "L_LLGLVIG",
+          "LPALLLG"
         ],
-        "Rule_IC_Score": 21.61,
+        "False_Positive_Rate": 0.0004
+      },
+      {
+        "Pattern": "x(0,2)-L-L-L-T-x(0,4)",
+        "Average_Score": 0.5111,
+        "Covered_Count": 2,
+        "Covered_Words": [
+          "TLLLTLVVV",
+          "ASLL_L_T"
+        ],
+        "False_Positive_Rate": 0.0009
+      },
+      {
+        "Pattern": "x(0,1)-F-T-H-A-S-I-M-S-L-L-x(0,4)",
+        "Average_Score": 0.7396,
+        "Covered_Count": 2,
+        "Covered_Words": [
+          "VFTHASIMSLLAIAV",
+          "IFTHASIMSLLAIAV"
+        ],
         "False_Positive_Rate": 0.0
+      },
+      {
+        "Pattern": "x(0,1)-L-V-V-L-G-S-G-G-V-G-x(0,3)",
+        "Average_Score": 0.6623,
+        "Covered_Count": 2,
+        "Covered_Words": [
+          "KLVVLGSGGVGKSA",
+          "LVVLGSGGVG"
+        ],
+        "False_Positive_Rate": 0.0
+      },
+      {
+        "Pattern": "x(0,1)-V-V-L-S-G-G-G-T-S-G-x(0,2)",
+        "Average_Score": 0.5695,
+        "Covered_Count": 2,
+        "Covered_Words": [
+          "LVVLSGGGTSGR",
+          "VVLSGGGTSGRM"
+        ],
+        "False_Positive_Rate": 0.0
+      },
+      {
+        "Pattern": "x(0,2)-V-T-V-L-V-Q-S-S-S-T-x(0,3)",
+        "Average_Score": 0.6085,
+        "Covered_Count": 2,
+        "Covered_Words": [
+          "VLVTVLVQSSSTST",
+          "VTVLVQSSSTSTS"
+        ],
+        "False_Positive_Rate": 0.0
+      },
+      {
+        "Pattern": "x(0,4)-S-G-S-G-S-G-L-P-x(0,3)",
+        "Average_Score": 0.4327,
+        "Covered_Count": 2,
+        "Covered_Words": [
+          "SGSGSGLPLLV",
+          "HSCTSGSGSGLPFLV"
+        ],
+        "False_Positive_Rate": 0.0
+      },
+      {
+        "Pattern": "x(0,1)-K-T-A-T-N-I-Y-I-F-N-x(0,4)",
+        "Average_Score": 0.4859,
+        "Covered_Count": 2,
+        "Covered_Words": [
+          "MKTATNIYIFNLALA",
+          "KTATNIYIFNLALA"
+        ],
+        "False_Positive_Rate": 0.0
+      },
+      {
+        "Pattern": "x(0,3)-V-L-V-x(0,3)",
+        "Average_Score": 0.5974,
+        "Covered_Count": 2,
+        "Covered_Words": [
+          "V_WVLVLSL",
+          "LLIVLVAA"
+        ],
+        "False_Positive_Rate": 0.0046
+      },
+      {
+        "Pattern": "x(0,4)-A-L-L-x(0,2)",
+        "Average_Score": 0.5649,
+        "Covered_Count": 2,
+        "Covered_Words": [
+          "T_LPLALLP",
+          "G_VSDALLVP"
+        ],
+        "False_Positive_Rate": 0.0051
+      },
+      {
+        "Pattern": "x(0,4)-L-V-I-x(0,4)",
+        "Average_Score": 0.5188,
+        "Covered_Count": 2,
+        "Covered_Words": [
+          "TAIALVIV",
+          "NVLVIIAV_I"
+        ],
+        "False_Positive_Rate": 0.0036
+      },
+      {
+        "Pattern": "x(0,2)-A-I-A-L-D-R-Y-W-x(0,4)",
+        "Average_Score": 0.5061,
+        "Covered_Count": 2,
+        "Covered_Words": [
+          "TAIALDRYWSITR",
+          "LCAIALDRYWA"
+        ],
+        "False_Positive_Rate": 0.0
+      },
+      {
+        "Pattern": "x(0,4)-I-S-L-D-R-Y-x(0,4)",
+        "Average_Score": 0.5846,
+        "Covered_Count": 2,
+        "Covered_Words": [
+          "ILAFISLDRYLA",
+          "V_LCAISLDRYWSV_Q"
+        ],
+        "False_Positive_Rate": 0.0001
       }
     ],
-    "Process_Time_s": 33.4
+    "Process_Time_s": 15.69
   }
 ]
