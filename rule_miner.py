@@ -49,7 +49,7 @@ SEMANTIC_GROUPS = [
 SEMANTIC_TO_REGEX = {name: '[' + ''.join(sorted(aas)) + ']' for name, aas in SEMANTIC_GROUPS}
 
 MAX_IC = math.log2(20)  # ~4.32 bits
-MIN_IC_SCORE = 1.5       # 修正：从3.0下调至1.5
+MIN_IC_SCORE = 1.0       # 修正：从1.5下调至1.0，提高泛化效力
 MIN_IC_STRONG = 3.0       # 强保守阈值（用于优先简并）
 TOP_N_SEEDS = 100         # 修正：用于模糊聚类的种子池大小
 TOP_N_SEEDS_FINAL = 20    # 模糊聚类后最终输出的种子数
@@ -61,6 +61,7 @@ EPSILON = 1e-10
 HAMMING_DIST = 1          # 模糊聚类：仅允许1个位置不同
 FREQ_THRESHOLD = 0.8      # 弱保守列：取累积频率超80%的Top-K氨基酸
 TERMINAL_GAP_MAX_RANGE = 3  # 头尾GAP允许的最大范围(max-min)，超过则不加GAP
+MIN_PATTERN_LEN = 0          # 移除规则最小长度限制（0表示不限制）
 
 # Set Cover权重
 W1 = 0.5
@@ -226,6 +227,17 @@ def count_matches(rule_pattern, words):
         if compiled.search(aa_seq):
             matched.add(word)
     return len(matched), matched
+
+
+def count_solid_blocks(rule_pattern):
+    """统计规则中实心块（非GAP、非x(n,m)）的数量"""
+    parts = rule_pattern.split('-')
+    count = 0
+    for part in parts:
+        if part.startswith('x(') or part.startswith('<GAP('):
+            continue
+        count += 1
+    return count
 
 
 # ============================================================
@@ -655,6 +667,13 @@ def phase2_expand_from_seed(seed_pattern, seed_matching_words, P, B, seed_score)
         if closed_fpr <= MAX_FPR:
             candidates.append((closed_rule, closed_matched, ic, closed_fpr))
 
+    # 已禁用长度过滤（MIN_PATTERN_LEN=0），保留所有候选规则
+    # filtered = []
+    # for rp, mw, ic, fpr in candidates:
+    #     if count_solid_blocks(rp) >= MIN_PATTERN_LEN:
+    #         filtered.append((rp, mw, ic, fpr))
+    # return filtered
+
     return candidates
 
 
@@ -751,6 +770,7 @@ def phase4_aggregate(selected_rules, wordfrag2score, frag_id):
             'Pattern': rule_pattern,
             'Average_Score': round(avg_score, 4),
             'Covered_Count': len(covered_words),
+            'Covered_Words': list(covered_words),
             'Rule_IC_Score': round(ic_sum, 2),
             'False_Positive_Rate': round(fpr, 4),
         })
@@ -791,6 +811,33 @@ def process_fragment(frag_id, P, global_words, global_kmer_freq, global_total,
 
     # Phase 4: 聚合输出
     rules = phase4_aggregate(selected, wordfrag2score, frag_id)
+
+    # 验证步骤：确保每条规则确实能匹配其声称的Covered_Words，且覆盖数>=2
+    validated_rules = []
+    for rule in rules:
+        pattern = rule['Pattern']
+        covered_words = rule['Covered_Words']
+        covered_count = rule['Covered_Count']
+
+        # 必须覆盖至少2个词
+        if covered_count < 2:
+            continue
+
+        regex_str = rule_to_regex(pattern)
+        compiled = re.compile(regex_str)
+
+        mismatched = []
+        for word in covered_words:
+            aa_seq = aa_sequence(word)
+            if not compiled.search(aa_seq):
+                mismatched.append(word)
+
+        if mismatched:
+            print(f"  [警告] 规则 {pattern} 有 {len(mismatched)} 个词未匹配，已剔除")
+        else:
+            validated_rules.append(rule)
+
+    rules = validated_rules
 
     compression_ratio = len(P) / len(rules) if rules else 0
 
