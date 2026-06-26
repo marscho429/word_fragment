@@ -651,88 +651,137 @@ def merge_with_additional_sequence_v2(covered_seqs, new_seq):
 
 def find_best_anchor_for_multiple(seqs):
     """
-    为多个序列找最佳公共锚点（允许简并）
+    纪律2：为多个序列找最佳公共锚点（特异性加权滑动对齐）
     
-    修改：找到允许每列2-3种氨基酸的最长简并锚点
+    核心改进：
+    - 使用特异性加权评分：常见氨基酸(L,A,G,V,I,P,S,T)权重低，稀有氨基酸权重高
+    - 允许滑动对齐：每个序列独立选择起始位置以最大化总特异性得分
+    - 优先对齐非L的特异性残基，避免被"L-rich"区域误导
+    
     返回：(锚点起始位置列表, 简并核心区域)
     """
     if len(seqs) < 2:
         return None
     
-    max_len = max(len(seq) for seq in seqs)
+    # 纪律2：特异性权重表（越高越特异）
+    SPECIFICITY_WEIGHTS = {
+        'W': 3.0,  # 色氨酸，最稀有
+        'C': 2.5,  # 半胱氨酸
+        'H': 2.5,  # 组氨酸
+        'M': 2.0,  # 甲硫氨酸
+        'F': 1.5,  # 苯丙氨酸
+        'Y': 1.5,  # 酪氨酸
+        'N': 1.2,  # 天冬酰胺
+        'Q': 1.2,  # 谷氨酰胺
+        'D': 1.0,  # 天冬氨酸
+        'E': 1.0,  # 谷氨酸
+        'K': 1.0,  # 赖氨酸
+        'R': 1.0,  # 精氨酸
+        'L': 0.3,  # 亮氨酸，最常见，权重最低
+        'A': 0.3,  # 丙氨酸
+        'G': 0.3,  # 甘氨酸
+        'V': 0.3,  # 缬氨酸
+        'I': 0.3,  # 异亮氨酸
+        'P': 0.3,  # 脯氨酸
+        'S': 0.3,  # 丝氨酸
+        'T': 0.3,  # 苏氨酸
+        '_': 0.1,  # 下划线，权重最低
+    }
+    
+    # 计算序列的特异性得分
+    def get_char_weight(char):
+        return SPECIFICITY_WEIGHTS.get(char, 0.3)
+    
     best_score = -1
     best_result = None
     
-    # 尝试不同的锚点长度（2-8）
-    for anchor_len in range(2, min(max_len, 8) + 1):
-        for start_pos in range(max_len - anchor_len + 1):
+    # 尝试不同的锚点长度（2-10）
+    for anchor_len in range(2, 11):
+        # 对每个序列尝试所有可能的起始位置
+        # 生成所有序列的位置组合
+        position_combinations = []
+        
+        def generate_combinations(seq_idx, current_positions):
+            if seq_idx == len(seqs):
+                position_combinations.append(list(current_positions))
+                return
+            
+            seq = seqs[seq_idx]
+            max_start = len(seq) - anchor_len + 1
+            for start_pos in range(max_start):
+                if start_pos >= 0:
+                    current_positions.append(start_pos)
+                    generate_combinations(seq_idx + 1, current_positions)
+                    current_positions.pop()
+        
+        generate_combinations(0, [])
+        
+        for seq_positions in position_combinations:
+            # 检查这个位置组合是否有效
             chars_list = []
             valid = True
-            seq_positions = []
+            total_specificity_score = 0.0
             
-            for seq_idx, seq in enumerate(seqs):
-                seq_start_pos = -1
-                # 在序列中寻找匹配的位置
-                for search_start in range(len(seq) - anchor_len + 1):
-                    match = True
-                    for col_idx in range(anchor_len):
-                        pos_in_seq = search_start + col_idx
-                        if pos_in_seq >= len(seq):
-                            match = False
-                            break
-                        char = seq[pos_in_seq]
-                        if char not in AA_LETTERS:
-                            match = False
-                            break
-                    
-                    if match:
-                        seq_start_pos = search_start
-                        break
-                
-                if seq_start_pos == -1:
-                    valid = False
-                    break
-                seq_positions.append(seq_start_pos)
-            
-            if not valid:
-                continue
-            
-            # 检查每列的氨基酸种类
             for col_idx in range(anchor_len):
                 chars = []
+                col_specificity = 0.0
+                
                 for seq_idx, seq in enumerate(seqs):
                     pos_in_seq = seq_positions[seq_idx] + col_idx
+                    if pos_in_seq >= len(seq):
+                        valid = False
+                        break
+                    
                     char = seq[pos_in_seq]
-                    if char in AA_LETTERS:
+                    if char == '_':
+                        # 纪律1：下划线作为实体字符参与对齐
+                        chars.append('_')
+                        col_specificity += get_char_weight(char)
+                    elif char in AA_LETTERS:
                         chars.append(char)
+                        col_specificity += get_char_weight(char)
+                    else:
+                        valid = False
+                        break
                 
-                unique_chars = set(chars)
-                if len(unique_chars) > MAX_BRACKET_SIZE:
+                if not valid:
+                    break
+                
+                # 检查该列的氨基酸种类（包括下划线）
+                # 下划线不算作氨基酸种类，只作为占位符
+                aa_chars = [c for c in chars if c != '_']
+                unique_aas = set(aa_chars)
+                
+                if len(unique_aas) > MAX_BRACKET_SIZE:
                     valid = False
                     break
                 
+                # 计算该列的特异性得分
+                total_specificity_score += col_specificity
                 chars_list.append(chars)
             
             if not valid:
                 continue
             
-            # 计算得分：锚点长度 + 简并程度
-            score = anchor_len
-            for chars in chars_list:
-                if len(set(chars)) > 1:
-                    score += 0.5
+            # 计算总得分：特异性得分 + 长度奖励
+            score = total_specificity_score + anchor_len * 0.5
             
             if score > best_score:
                 best_score = score
                 # 生成简并核心区域
                 core_parts = []
                 for chars in chars_list:
-                    unique_chars = set(chars)
-                    if len(unique_chars) == 1:
-                        core_parts.append(list(unique_chars)[0])
+                    aa_chars = [c for c in chars if c != '_']
+                    if len(aa_chars) == 0:
+                        # 该列全是下划线
+                        core_parts.append('_')
                     else:
-                        bracket = ''.join(sorted(unique_chars))
-                        core_parts.append(f'[{bracket}]')
+                        unique_aas = set(aa_chars)
+                        if len(unique_aas) == 1:
+                            core_parts.append(list(unique_aas)[0])
+                        else:
+                            bracket = ''.join(sorted(unique_aas))
+                            core_parts.append(f'[{bracket}]')
                 
                 best_result = (seq_positions, core_parts)
     
@@ -992,12 +1041,16 @@ def mine_rules(pos_set, background_pool):
 
 def validate_rule_coverage(rule_pattern, covered_seqs):
     """
-    修复3：回溯自证（Retroactive Validation）
+    纪律3：回溯自证（Retroactive Validation）
+    
+    修复：使用完整序列（带下划线）进行匹配，不擦除下划线！
     
     将规则编译为正则，使用fullmatch验证每一个声称覆盖的词
     只要有任何一个词匹配失败，规则作废
     
-    返回：True如果所有词都能匹配，False否则
+    额外检查：特异性氨基酸（非L）不能掉进x(m,n)通配符里！
+    
+    返回：True如果所有词都能匹配且特异性氨基酸都在实心区域，False否则
     """
     regex_str = rule_to_regex(rule_pattern)
     
@@ -1007,12 +1060,75 @@ def validate_rule_coverage(rule_pattern, covered_seqs):
         return False
     
     for seq in covered_seqs:
+        # 纪律1：使用完整序列（带下划线），不擦除！
         full_seq = get_full_sequence(seq)
-        solid_seq = get_solid_sequence(full_seq)
         
         # 必须完全匹配（fullmatch）
-        if not compiled.fullmatch(solid_seq):
+        match = compiled.fullmatch(full_seq)
+        if not match:
             return False
+        
+        # 纪律3：特异性氨基酸不能掉进x(m,n)通配符里
+        if not audit_specific_residues(rule_pattern, full_seq):
+            return False
+    
+    return True
+
+
+def audit_specific_residues(rule_pattern, full_seq):
+    """
+    纪律3：审计特异性残基是否落在实心区域
+    
+    检查序列中所有非L的特异性氨基酸，确保它们都落在规则的实心字母或方括号内
+    不允许特异性氨基酸掉进x(m,n)通配符里
+    
+    返回：True如果所有特异性氨基酸都在实心区域，False否则
+    """
+    # 常见氨基酸（可以允许掉进通配符）
+    COMMON_AAS = {'L', 'A', 'G', 'V', 'I', 'P', 'S', 'T'}
+    
+    # 将规则分解为各个部分
+    parts = rule_pattern.split('-')
+    
+    # 跟踪当前匹配位置
+    pos = 0
+    
+    for part in parts:
+        if part.startswith('x(') and part.endswith(')'):
+            # x(m,n)通配符
+            inner = part[2:-1]
+            if ',' in inner:
+                m, n = inner.split(',')
+                m, n = int(m), int(n)
+            else:
+                m = n = int(inner)
+            
+            # 计算这个通配符消耗了多少字符
+            consumed = 0
+            while pos + consumed < len(full_seq) and consumed < n:
+                consumed += 1
+            
+            # 检查这个通配符消耗的区域是否有特异性氨基酸
+            for i in range(consumed):
+                if pos + i < len(full_seq):
+                    char = full_seq[pos + i]
+                    if char in AA_LETTERS and char not in COMMON_AAS:
+                        # 特异性氨基酸掉进了通配符里！
+                        return False
+            
+            pos += consumed
+            
+        elif part.startswith('[') and part.endswith(']'):
+            # 方括号区域（允许特异性氨基酸）
+            pos += 1
+            
+        elif len(part) == 1 and part in AA_LETTERS:
+            # 实心字母区域（允许特异性氨基酸）
+            pos += 1
+            
+        else:
+            # 其他情况，跳过1个字符
+            pos += 1
     
     return True
 
