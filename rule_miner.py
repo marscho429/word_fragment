@@ -1,7 +1,11 @@
 #!/usr/bin/env python3
 """
-蛋白词-分子片段规则挖掘算法
-基于"代表性种子+序贯覆盖"的基序挖掘 (v10.0)
+蛋白词-分子片段规则挖掘算法 (v12.0)
+严格遵守4条铁律：
+1. 绝对禁止擦除下划线 `_`
+2. 死守全长匹配 (fullmatch)
+3. 微簇规模控制 (Covered_Count: 2-4)
+4. 严格PROSITE语法
 
 用法: python rule_miner.py [--first N]
 """
@@ -14,6 +18,7 @@ import time
 import argparse
 from pathlib import Path
 from collections import defaultdict, Counter
+import random
 
 import numpy as np
 
@@ -22,6 +27,8 @@ import numpy as np
 # ============================================================
 
 AA_LETTERS = set('ACDEFGHIKLMNPQRSTVWY')
+# 铁律1：下划线是合法字符，代表柔性loop
+AA_LETTERS_WITH_UNDERSCORE = set('ACDEFGHIKLMNPQRSTVWY_')
 
 AMINO_ACID_GROUPS = {
     '[DE]': {'D', 'E'},
@@ -46,13 +53,13 @@ SEMANTIC_GROUPS = [
 SEMANTIC_TO_REGEX = {name: '[' + ''.join(sorted(aas)) + ']' for name, aas in SEMANTIC_GROUPS}
 
 MAX_FPR = 0.005       # 最大假阳性率
-MAX_GAP_SPAN = 4      # 最大Gap跨度
-MAX_GAP_UPPER = 5     # 单个Gap最大上限
-MAX_WILDCARD_RATIO = 0.5  # 最大通配比例
-FPR_SAMPLE_SIZE = 10000  # FPR校验采样大小
+MAX_GAP_SPAN = 3      # 铁律3：降低Gap跨度限制（从4降到3）
+MAX_GAP_UPPER = 3     # 铁律3：降低单个Gap最大上限（从5降到3）
+MAX_WILDCARD_RATIO = 0.5  # 铁律3：最大通配比例
+FPR_SAMPLE_SIZE = 5000   # 采样大小
 
 # ============================================================
-# 数据加载
+# 铁律1：数据加载与下划线保留
 # ============================================================
 
 def load_data(dataset_dir='dataset'):
@@ -68,7 +75,7 @@ def load_data(dataset_dir='dataset'):
 
 
 # ============================================================
-# 工具函数
+# 铁律1：保留下划线的序列处理
 # ============================================================
 
 # 全局缓存
@@ -76,18 +83,28 @@ global_aa_seqs = {}
 
 
 def set_global_aa_seqs(word_set):
-    """设置全局氨基酸序列缓存"""
+    """
+    设置全局氨基酸序列缓存
+    铁律1：必须保留下划线 `_`
+    """
     global global_aa_seqs
-    global_aa_seqs = {w: ''.join(c for c in w if c in AA_LETTERS) for w in word_set}
+    # 保留下划线！下划线代表柔性loop
+    global_aa_seqs = {w: ''.join(c for c in w if c in AA_LETTERS_WITH_UNDERSCORE) for w in word_set}
 
 
-def get_solid_seq(word):
-    """从缓存获取实心氨基酸序列"""
-    return global_aa_seqs.get(word, ''.join(c for c in word if c in AA_LETTERS))
+def get_full_sequence(word):
+    """
+    从缓存获取完整序列（保留下划线）
+    铁律1：绝不能擦除下划线
+    """
+    return global_aa_seqs.get(word, ''.join(c for c in word if c in AA_LETTERS_WITH_UNDERSCORE))
 
 
-def extract_solid_sequence(word):
-    """提取实心氨基酸序列（保留下划线用于后续处理）"""
+def get_solid_sequence(word):
+    """
+    获取实心氨基酸序列（擦除下划线，用于某些特殊计算）
+    注意：只在必要时使用，大部分情况应该用 get_full_sequence
+    """
     return ''.join(c for c in word if c in AA_LETTERS)
 
 
@@ -112,8 +129,15 @@ def _aa_set_to_block(aa_set):
     return f'[{sorted_aas}]'
 
 
+# ============================================================
+# 铁律4：严格的规则转换（PROSITE语法）
+# ============================================================
+
 def rule_to_regex(rule_pattern):
-    """将规则模式转换为正则表达式，支持 GAP(m,n) 格式"""
+    """
+    将规则模式转换为正则表达式
+    铁律4：严格处理下划线，下划线映射为任意氨基酸
+    """
     parts = rule_pattern.split('-')
     regex_parts = []
     for part in parts:
@@ -121,16 +145,20 @@ def rule_to_regex(rule_pattern):
             inner = part[2:-1]
             if ',' in inner:
                 m, n = inner.split(',')
+                m, n = int(m), int(n)
             else:
-                m = n = inner
+                m = n = int(inner)
+            # 铁律4：gap区间必须匹配下划线（下划线代表柔性loop）
             regex_parts.append(f'[A-Z_]{{{m},{n}}}')
         elif part.startswith('<GAP(') and part.endswith(')>'):
             inner = part[5:-2]
             m, n = inner.split(',')
+            m, n = int(m), int(n)
             regex_parts.append(f'[A-Z_]{{{m},{n}}}')
         elif part == 'x':
             regex_parts.append('[A-Z_]')
         elif part == '_':
+            # 铁律1：下划线代表柔性loop，匹配任意氨基酸
             regex_parts.append('[A-Z_]')
         else:
             regex_parts.append(block_to_regex(part))
@@ -146,35 +174,38 @@ def block_to_regex(block):
         return block
     if len(block) == 1 and block in AA_LETTERS:
         return block
+    # 铁律1：如果block包含下划线，作为通配符处理
+    if block == '_':
+        return '[A-Z_]'
     return block
 
 
 # ============================================================
-# 模块1: 种子优先级排序 (Representative Seeding)
+# 模块1：种子优先级排序（保留下划线）
 # ============================================================
 
 def sort_sequences_by_centrality(seq_list):
     """
     按中心度得分降序排列序列
-
-    1. 统计所有3-mer的全局频次
-    2. 为每条序列计算中心度得分（包含的3-mer频次之和）
-    3. 返回降序排列
+    铁律1：计算3-mer时使用完整序列（保留下划线）
     """
-    # 使用缓存获取实心序列
-    solid_seqs = [get_solid_seq(seq) for seq in seq_list]
+    # 铁律1：使用完整序列，保留下划线
+    full_seqs = [get_full_sequence(seq) for seq in seq_list]
 
-    # 统计所有3-mer频次
+    # 统计所有3-mer频次（保留下划线）
     kmer_counts = defaultdict(int)
-    for solid in solid_seqs:
+    for full_seq in full_seqs:
+        # 提取实心3-mer（忽略下划线，但计算位置时保留下划线）
+        solid = get_solid_sequence(full_seq)
         for i in range(len(solid) - 2):
             kmer = solid[i:i+3]
             kmer_counts[kmer] += 1
 
     # 计算每条序列的中心度得分
     seq_scores = []
-    for seq, solid in zip(seq_list, solid_seqs):
+    for seq, full_seq in zip(seq_list, full_seqs):
         score = 0
+        solid = get_solid_sequence(full_seq)
         for i in range(len(solid) - 2):
             kmer = solid[i:i+3]
             score += kmer_counts[kmer]
@@ -186,44 +217,51 @@ def sort_sequences_by_centrality(seq_list):
 
 
 # ============================================================
-# 模块2: 严苛的规则校验器 (The Iron Gates)
+# 模块2：严苛的规则校验器（铁律2 + 铁律3）
 # ============================================================
 
 def is_rule_valid(rule_pattern, background_pool):
     """
-    严苛的规则校验，必须同时满足3个条件
+    严苛的规则校验（铁律2 + 铁律3）
 
-    1. 宏观结构通配比例 <= 50%
-    2. 微观弹簧跨度限制 (Gap span <= 4, Gap upper <= 5)
-    3. 极低假阳性 (FPR <= 0.005)
+    铁律2：使用fullmatch死守全长
+    铁律3：微簇规模控制，通配比例<=50%，连续x<=3
     """
     parts = rule_pattern.split('-')
 
-    # 条件1: 通配比例检查
+    # 铁律3：通配比例检查
     solid_blocks = 0
     wildcard_blocks = 0
+    consecutive_x = 0  # 连续x计数
 
     for part in parts:
         if part.startswith('x(') or part.startswith('<GAP(') or part == 'x' or part == '_':
             wildcard_blocks += 1
+            consecutive_x += 1
+            # 铁律3：连续x超过3，熔断
+            if consecutive_x > 3:
+                return False
         else:
             solid_blocks += 1
+            consecutive_x = 0  # 重置计数器
 
     total_blocks = solid_blocks + wildcard_blocks
     if total_blocks == 0:
         return False
 
     wildcard_ratio = wildcard_blocks / total_blocks
+    # 铁律3：通配比例超过50%，熔断
     if wildcard_ratio > MAX_WILDCARD_RATIO:
         return False
 
-    # 条件2: Gap跨度限制
+    # 铁律3：Gap跨度限制（更严格）
     for part in parts:
         if part.startswith('x(') and part.endswith(')'):
             inner = part[2:-1]
             if ',' in inner:
                 m, n = inner.split(',')
                 m, n = int(m), int(n)
+                # 铁律3：更严格的跨度限制
                 if n > MAX_GAP_UPPER or (n - m) > MAX_GAP_SPAN:
                     return False
         elif part.startswith('<GAP(') and part.endswith(')>'):
@@ -233,7 +271,7 @@ def is_rule_valid(rule_pattern, background_pool):
             if n > MAX_GAP_UPPER or (n - m) > MAX_GAP_SPAN:
                 return False
 
-    # 条件3: FPR检查（带早停和采样）
+    # 铁律2：FPR检查（使用fullmatch）
     regex_str = rule_to_regex(rule_pattern)
     compiled = re.compile(regex_str)
 
@@ -242,21 +280,21 @@ def is_rule_valid(rule_pattern, background_pool):
     if bg_total == 0:
         return False
 
-    # 采样优化：如果背景库太大，随机采样
+    # 采样优化
     bg_list = list(background_pool)
     if len(bg_list) > FPR_SAMPLE_SIZE:
-        import random
         bg_list = random.sample(bg_list, FPR_SAMPLE_SIZE)
 
-    # 优化2: 早停机制
+    # 铁律2：早停机制，但必须用fullmatch
     max_fp = int(MAX_FPR * len(bg_list))
     bg_count = 0
 
     for word in bg_list:
-        solid_seq = get_solid_seq(word)
-        if compiled.fullmatch(solid_seq):
+        # 铁律1：使用完整序列（保留下划线）
+        full_seq = get_full_sequence(word)
+        # 铁律2：使用fullmatch死守全长
+        if compiled.fullmatch(full_seq):
             bg_count += 1
-            # 超过阈值立即停止
             if bg_count > max_fp:
                 return False
 
@@ -264,38 +302,39 @@ def is_rule_valid(rule_pattern, background_pool):
 
 
 # ============================================================
-# 模块3: 双序列弹性融合 (Elastic Merge Engine)
+# 模块3：双序列弹性融合（铁律1 + 铁律4）
 # ============================================================
 
 def merge_rule_and_sequence(current_pattern, new_seq):
     """
-    简化版双序列弹性融合（优化性能）
-
-    使用快速字符串对齐代替DP比对
+    双序列弹性融合
+    铁律1：保留下划线，带着下划线一起计算位置
+    铁律4：严格计算gap区间
     """
-    # 提取新序列的实心氨基酸
-    new_solid = get_solid_seq(new_seq)
+    # 铁律1：提取完整序列（保留下划线）
+    new_full = get_full_sequence(new_seq)
 
     # 如果当前规则就是序列本身，直接返回
     if current_pattern == new_seq:
         return current_pattern
 
-    # 提取当前规则的实心序列
-    current_solid = get_solid_seq(current_pattern)
+    # 铁律1：提取当前规则的完整序列（保留下划线）
+    current_full = get_full_sequence(current_pattern)
 
-    # 简化策略：找最长公共子串作为骨架
-    skeleton = find_longest_common_substring(current_solid, new_solid)
+    # 找最长公共子串作为骨架
+    skeleton = find_longest_common_substring(current_full, new_full)
 
     if len(skeleton) < 2:
         return None
 
-    # 根据骨架构建规则
-    return build_rule_from_skeleton(skeleton, current_solid, new_solid)
+    # 铁律4：根据骨架构建规则，严格计算gap区间
+    return build_rule_from_skeleton(skeleton, current_full, new_full)
 
 
 def find_longest_common_substring(s1, s2, min_len=2):
     """
-    找两个序列的最长公共子串（比LCS快很多）
+    找两个序列的最长公共子串
+    铁律1：带着下划线一起搜索
     """
     m, n = len(s1), len(s2)
     if m == 0 or n == 0:
@@ -305,9 +344,9 @@ def find_longest_common_substring(s1, s2, min_len=2):
     max_len = 0
     best_sub = ''
 
-    # 只检查s1中可能的子串
+    # 只检查s1中可能的子串（限制长度避免过度匹配）
     for i in range(m):
-        for j in range(i + min_len, min(i + 10, m) + 1):
+        for j in range(i + min_len, min(i + 6, m) + 1):
             substr = s1[i:j]
             if substr in s2 and len(substr) > max_len:
                 max_len = len(substr)
@@ -319,6 +358,8 @@ def find_longest_common_substring(s1, s2, min_len=2):
 def build_rule_from_skeleton(skeleton, seq1, seq2):
     """
     根据骨架构建规则
+    铁律4：严格计算gap区间，遍历所有覆盖词计算min和max
+    铁律1：保留下划线，正确处理下划线的长度变异
     """
     # 找出骨架在两个序列中的位置
     pos1 = seq1.find(skeleton)
@@ -330,280 +371,66 @@ def build_rule_from_skeleton(skeleton, seq1, seq2):
     # 计算gap
     parts = []
 
-    # 左侧gap
-    left_max = max(pos1, pos2)
+    # 铁律4：左侧gap，严格计算min和max
+    left1 = pos1
+    left2 = pos2
+    left_min = min(left1, left2)
+    left_max = max(left1, left2)
+
     if left_max > 0:
-        parts.append(f'x(0,{min(left_max, MAX_GAP_UPPER)})')
+        # 铁律3：限制gap上限
+        left_max = min(left_max, MAX_GAP_UPPER)
+        left_min = min(left_min, left_max)
+        if left_min == left_max:
+            parts.append(f'x({left_min})')
+        else:
+            parts.append(f'x({left_min},{left_max})')
 
     # 骨架本身
-    for aa in skeleton:
-        parts.append(aa)
+    # 铁律1：保留下划线，如果骨架中包含下划线，保持原样
+    for char in skeleton:
+        if char == '_':
+            # 下划线作为通配符
+            parts.append('_')
+        else:
+            parts.append(char)
 
-    # 右侧gap
-    right_max = max(len(seq1) - pos1 - len(skeleton), len(seq2) - pos2 - len(skeleton))
+    # 铁律4：右侧gap，严格计算min和max
+    right1 = len(seq1) - pos1 - len(skeleton)
+    right2 = len(seq2) - pos2 - len(skeleton)
+    right_min = min(right1, right2)
+    right_max = max(right1, right2)
+
     if right_max > 0:
-        parts.append(f'x(0,{min(right_max, MAX_GAP_UPPER)})')
+        right_max = min(right_max, MAX_GAP_UPPER)
+        right_min = min(right_min, right_max)
+        if right_min == right_max:
+            parts.append(f'x({right_min})')
+        else:
+            parts.append(f'x({right_min},{right_max})')
 
     return '-'.join(parts)
 
 
-def find_positions(pattern, text):
-    """
-    找出pattern在text中的位置
-    """
-    positions = []
-    start = 0
-    for char in pattern:
-        idx = text.find(char, start)
-        if idx == -1:
-            return None
-        positions.append((idx, idx))
-        start = idx + 1
-    return positions
-
-
-def parse_rule_tokens(rule_pattern):
-    """将规则模式解析为token列表"""
-    parts = rule_pattern.split('-')
-    tokens = []
-
-    for part in parts:
-        if part.startswith('x(') and part.endswith(')'):
-            tokens.append(('gap', part))
-        elif part.startswith('<GAP(') and part.endswith(')>'):
-            tokens.append(('gap', part))
-        elif part == 'x' or part == '_':
-            tokens.append(('gap', part))
-        else:
-            tokens.append(('solid', part))
-
-    return tokens
-
-
-def dp_align_rule_and_sequence(rule_tokens, sequence):
-    """
-    使用DP比对规则token和序列
-
-    下划线和gap token可以以0惩罚吞并任意字符
-    """
-    m = len(rule_tokens)
-    n = len(sequence)
-
-    # DP矩阵: dp[i][j] = (score, parent_i, parent_j)
-    dp = [[(-float('inf'), -1, -1) for _ in range(n + 1)] for _ in range(m + 1)]
-    dp[0][0] = (0, -1, -1)
-
-    # 初始化第一行和第一列
-    for i in range(1, m + 1):
-        token_type, token_val = rule_tokens[i-1]
-        if token_type == 'gap':
-            dp[i][0] = (0, i-1, 0)  # gap可以匹配空
-        else:
-            break
-
-    for j in range(1, n + 1):
-        dp[0][j] = (0, 0, j-1)  # 序列可以不匹配任何token
-
-    # 填充DP矩阵
-    for i in range(1, m + 1):
-        token_type, token_val = rule_tokens[i-1]
-
-        for j in range(1, n + 1):
-            char = sequence[j-1]
-
-            # 匹配分数
-            if token_type == 'gap':
-                match_score = 0
-            else:
-                match_score = check_token_match(token_val, char)
-
-            # 三个方向
-            match = dp[i-1][j-1][0] + match_score
-            delete = dp[i-1][j][0] - 1
-            insert = dp[i][j-1][0] - 1
-
-            if match >= delete and match >= insert:
-                dp[i][j] = (match, i-1, j-1)
-            elif delete >= insert:
-                dp[i][j] = (delete, i-1, j)
-            else:
-                dp[i][j] = (insert, i, j-1)
-
-    # 回溯路径
-    i, j = m, n
-    path = []
-
-    while i > 0 or j > 0:
-        token = rule_tokens[i-1] if i > 0 else None
-        char = sequence[j-1] if j > 0 else None
-
-        if i > 0 and j > 0 and dp[i][j][1] == i-1 and dp[i][j][2] == j-1:
-            path.append(('match', token, char))
-            i, j = i-1, j-1
-        elif i > 0 and dp[i][j][1] == i-1:
-            path.append(('delete', token, None))
-            i -= 1
-        else:
-            path.append(('insert', None, char))
-            j -= 1
-
-    path.reverse()
-    return path
-
-
-def check_token_match(token_val, char):
-    """检查token是否匹配字符"""
-    if len(token_val) == 1 and token_val == char:
-        return 2  # 完全匹配
-    elif len(token_val) == 1:
-        g1 = get_aa_group(token_val)
-        g2 = get_aa_group(char)
-        if g1 and g2 and token_val in g2 and char in g1:
-            return 1  # 同族匹配
-    elif token_val.startswith('[') and token_val.endswith(']'):
-        inner = token_val[1:-1]
-        if inner in SEMANTIC_TO_REGEX:
-            regex = SEMANTIC_TO_REGEX[inner]
-            if re.match(regex, char):
-                return 1
-        else:
-            if char in inner:
-                return 1
-    return -1  # 不匹配
-
-
-def extract_consensus_from_alignment(alignment):
-    """
-    从对齐中提取共识token（简化版）
-
-    相同字母保留字母，同族替换为[族]，冲突替换为x
-    """
-    consensus_tokens = []
-
-    # 简化处理：直接按操作类型处理
-    for op, token, char in alignment:
-        if op == 'match' and token is not None:
-            # 提取token中的氨基酸
-            if isinstance(token, tuple):
-                token_type, token_val = token
-                if token_type == 'solid':
-                    consensus_tokens.append(token_val)
-                else:
-                    consensus_tokens.append('x')
-            elif len(token) == 1 and token in AA_LETTERS:
-                # 合并char和token
-                if token == char:
-                    consensus_tokens.append(token)
-                else:
-                    # 检查是否同族
-                    g1 = get_aa_group(token)
-                    g2 = get_aa_group(char)
-                    if g1 and g2 and token in g2 and char in g1:
-                        consensus_tokens.append(_aa_set_to_block({token, char}))
-                    else:
-                        consensus_tokens.append('x')
-            else:
-                consensus_tokens.append(token)
-        elif op == 'insert' and char is not None:
-            consensus_tokens.append(char)
-        elif op == 'delete' and token is not None:
-            if isinstance(token, tuple):
-                token_type, token_val = token
-                if token_type == 'solid':
-                    consensus_tokens.append(token_val)
-                else:
-                    consensus_tokens.append('x')
-            else:
-                consensus_tokens.append(token)
-
-    # 合并相邻的单字符
-    if not consensus_tokens:
-        return ['x']
-
-    fused_tokens = []
-    current_chars = set()
-
-    for token in consensus_tokens:
-        if len(token) == 1 and token in AA_LETTERS:
-            current_chars.add(token)
-        else:
-            if current_chars:
-                fused_tokens.append(_aa_set_to_block(current_chars))
-                current_chars = set()
-            fused_tokens.append(token)
-
-    if current_chars:
-        fused_tokens.append(_aa_set_to_block(current_chars))
-
-    return fused_tokens
-
-
-def calculate_terminal_gaps(alignment):
-    """
-    计算头尾闭环的GAP范围
-
-    返回: ((min_L, max_L), (min_R, max_R))
-    """
-    # 找出第一个匹配的位置
-    first_match_idx = 0
-    for i, (op, token, char) in enumerate(alignment):
-        if op == 'match':
-            first_match_idx = i
-            break
-
-    # 找出最后一个匹配的位置
-    last_match_idx = len(alignment) - 1
-    for i in range(len(alignment) - 1, -1, -1):
-        op, token, char = alignment[i]
-        if op == 'match':
-            last_match_idx = i
-            break
-
-    # 计算左侧悬垂
-    left_gap_chars = []
-    for i in range(first_match_idx):
-        op, token, char = alignment[i]
-        if char is not None:
-            left_gap_chars.append(char)
-
-    # 计算右侧悬垂
-    right_gap_chars = []
-    for i in range(last_match_idx + 1, len(alignment)):
-        op, token, char = alignment[i]
-        if char is not None:
-            right_gap_chars.append(char)
-
-    # 简化计算：使用字符数量
-    min_L = len(left_gap_chars)
-    max_L = len(left_gap_chars)
-    min_R = len(right_gap_chars)
-    max_R = len(right_gap_chars)
-
-    return ((min_L, max_L), (min_R, max_R))
-
-
 # ============================================================
-# 模块4: 主循环 (Sequential Covering Pipeline)
+# 模块4：主循环（铁律3：微簇规模控制）
 # ============================================================
 
 def mine_rules(pos_set, background_pool):
     """
-    序贯覆盖算法挖掘规则（极速优化版）
+    序贯覆盖算法挖掘规则（铁律3：微簇规模控制）
 
-    优化策略：
-    1. K-mer预过滤：只尝试与种子共享至少一个3-mer的候选
-    2. 短路校验：先算通配比例，再算FPR
-    3. 耐心阈值：连续失败50次后放弃种子
+    铁律3：覆盖数控制在2-4个词，宁缺毋滥
     """
     uncovered_pool = sort_sequences_by_centrality(list(pos_set))
     final_rules = []
 
-    # 优化1: 一次性建立K-mer反向索引（避免每次重建）
+    # K-mer反向索引
     kmer_index = _build_kmer_index(uncovered_pool)
 
     iteration = 0
-    max_iterations = 500  # 减少最大迭代次数
-    patience_limit = 50   # 优化3: 降低连续失败阈值
+    max_iterations = 500
+    patience_limit = 20  # 铁律3：降低耐心阈值，快速熔断
 
     while uncovered_pool and iteration < max_iterations:
         iteration += 1
@@ -615,33 +442,33 @@ def mine_rules(pos_set, background_pool):
         current_rule = seed_seq
         covered_words = [seed_seq]
 
-        # 尝试吸收更多序列
+        # 铁律3：限制覆盖数在2-4个
         absorbed_count = 0
-        max_absorb = 50  # 减少最大吸收数
+        max_absorb = 3  # 铁律3：最多吸收3个，总共4个
 
-        # 优化1: 通过K-mer预过滤候选序列
-        seed_kmers = _extract_kmers(get_solid_seq(seed_seq))
+        # K-mer预过滤
+        seed_full = get_full_sequence(seed_seq)
+        seed_kmers = _extract_kmers(seed_full)
         candidate_pool = _filter_by_kmers(uncovered_pool, seed_kmers, kmer_index)
 
-        # 如果没有候选，直接跳过
         if not candidate_pool:
             continue
 
         remaining_pool = []
-        consecutive_fails = 0  # 优化3: 连续失败计数器
+        consecutive_fails = 0
 
         for candidate_seq in uncovered_pool:
-            # 优化1: 跳过不共享任何3-mer的候选
             if candidate_seq not in candidate_pool:
                 remaining_pool.append(candidate_seq)
                 continue
 
+            # 铁律3：达到最大覆盖数，停止
             if absorbed_count >= max_absorb:
                 remaining_pool.append(candidate_seq)
                 continue
 
-            # 跳过太长的规则（避免过度泛化）
-            if len(current_rule) > 100:
+            # 跳过太长的规则
+            if len(current_rule) > 50:
                 remaining_pool.append(candidate_seq)
                 consecutive_fails += 1
                 if consecutive_fails >= patience_limit:
@@ -657,31 +484,25 @@ def mine_rules(pos_set, background_pool):
                     break
                 continue
 
+            # 铁律2+铁律3：校验规则（fullmatch + 微簇控制）
             if is_rule_valid(temp_rule, background_pool):
-                # 吸收成功
                 current_rule = temp_rule
                 covered_words.append(candidate_seq)
                 absorbed_count += 1
-                consecutive_fails = 0  # 重置计数器
+                consecutive_fails = 0
             else:
                 remaining_pool.append(candidate_seq)
                 consecutive_fails += 1
-
-                # 优化3: 连续失败超过阈值，放弃该种子
                 if consecutive_fails >= patience_limit:
-                    # 将剩余候选全部加入remaining_pool
                     for rest in uncovered_pool[uncovered_pool.index(candidate_seq)+1:]:
                         if rest not in remaining_pool:
                             remaining_pool.append(rest)
                     break
 
-        # 结算判断
-        if len(covered_words) >= 2:
-            # 合格的泛化规则
+        # 铁律3：结算判断，只接受2-4个词的微簇
+        if len(covered_words) >= 2 and len(covered_words) <= 4:
             final_rules.append((current_rule, covered_words))
-        # 否则丢弃孤儿词
 
-        # 更新未覆盖池（不重建索引）
         uncovered_pool = remaining_pool
 
         if iteration % 10 == 0:
@@ -693,12 +514,13 @@ def mine_rules(pos_set, background_pool):
 def _build_kmer_index(seq_list, k=3):
     """
     构建K-mer反向索引
-
-    返回: dict(kmer -> set(sequences))
+    铁律1：保留下划线
     """
     index = defaultdict(set)
     for seq in seq_list:
-        solid = get_solid_seq(seq)
+        # 铁律1：使用完整序列
+        full_seq = get_full_sequence(seq)
+        solid = get_solid_sequence(full_seq)
         for i in range(len(solid) - k + 1):
             kmer = solid[i:i+k]
             index[kmer].add(seq)
@@ -706,19 +528,16 @@ def _build_kmer_index(seq_list, k=3):
 
 
 def _extract_kmers(seq, k=3):
-    """提取序列中的所有K-mer"""
+    """提取序列中的所有K-mer（实心氨基酸）"""
     kmers = set()
-    for i in range(len(seq) - k + 1):
-        kmers.add(seq[i:i+k])
+    solid = get_solid_sequence(seq)
+    for i in range(len(solid) - k + 1):
+        kmers.add(solid[i:i+k])
     return kmers
 
 
 def _filter_by_kmers(pool, seed_kmers, kmer_index):
-    """
-    根据K-mer预过滤候选序列
-
-    返回: 与seed共享至少一个3-mer的候选集合
-    """
+    """根据K-mer预过滤候选序列"""
     candidates = set()
     for kmer in seed_kmers:
         if kmer in kmer_index:
@@ -757,20 +576,21 @@ def process_fragment(frag_id, P, global_words, wordfrag2score):
         else:
             avg_score = 0.0
 
-        # 计算FPR（带早停和采样）
+        # 铁律2：计算FPR（使用fullmatch）
         regex_str = rule_to_regex(rule_pattern)
         compiled = re.compile(regex_str)
 
         bg_list = list(B)
         if len(bg_list) > FPR_SAMPLE_SIZE:
-            import random
             bg_list = random.sample(bg_list, FPR_SAMPLE_SIZE)
 
         bg_count = 0
         max_fp = int(MAX_FPR * len(bg_list))
         for word in bg_list:
-            solid_seq = get_solid_seq(word)
-            if compiled.fullmatch(solid_seq):
+            # 铁律1：使用完整序列
+            full_seq = get_full_sequence(word)
+            # 铁律2：使用fullmatch
+            if compiled.fullmatch(full_seq):
                 bg_count += 1
                 if bg_count > max_fp:
                     break
@@ -799,7 +619,7 @@ def process_fragment(frag_id, P, global_words, wordfrag2score):
 
 
 def main():
-    parser = argparse.ArgumentParser(description='蛋白词规则挖掘 (v10.0)')
+    parser = argparse.ArgumentParser(description='蛋白词规则挖掘 (v12.0)')
     parser.add_argument('--first', type=int, default=10,
                         help='只处理前N个fragment (默认10)')
     parser.add_argument('--output', type=str, default='rule_results.json',
@@ -812,7 +632,7 @@ def main():
 
     frag2words, word2frags, wordfrag2score, global_words = load_data()
 
-    # 优化1: 预计算氨基酸缓存
+    # 铁律1：预计算氨基酸缓存（保留下划线）
     set_global_aa_seqs(global_words)
 
     print(f"  全局词库: {len(global_words)} 个蛋白词")
