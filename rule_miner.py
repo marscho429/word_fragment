@@ -658,6 +658,8 @@ def find_best_anchor_for_multiple(seqs):
     - 允许滑动对齐：每个序列独立选择起始位置以最大化总特异性得分
     - 优先对齐非L的特异性残基，避免被"L-rich"区域误导
     
+    优化：避免生成所有位置组合，改为限制搜索空间
+    
     返回：(锚点起始位置列表, 简并核心区域)
     """
     if len(seqs) < 2:
@@ -665,59 +667,51 @@ def find_best_anchor_for_multiple(seqs):
     
     # 纪律2：特异性权重表（越高越特异）
     SPECIFICITY_WEIGHTS = {
-        'W': 3.0,  # 色氨酸，最稀有
-        'C': 2.5,  # 半胱氨酸
-        'H': 2.5,  # 组氨酸
-        'M': 2.0,  # 甲硫氨酸
-        'F': 1.5,  # 苯丙氨酸
-        'Y': 1.5,  # 酪氨酸
-        'N': 1.2,  # 天冬酰胺
-        'Q': 1.2,  # 谷氨酰胺
-        'D': 1.0,  # 天冬氨酸
-        'E': 1.0,  # 谷氨酸
-        'K': 1.0,  # 赖氨酸
-        'R': 1.0,  # 精氨酸
-        'L': 0.3,  # 亮氨酸，最常见，权重最低
-        'A': 0.3,  # 丙氨酸
-        'G': 0.3,  # 甘氨酸
-        'V': 0.3,  # 缬氨酸
-        'I': 0.3,  # 异亮氨酸
-        'P': 0.3,  # 脯氨酸
-        'S': 0.3,  # 丝氨酸
-        'T': 0.3,  # 苏氨酸
-        '_': 0.1,  # 下划线，权重最低
+        'W': 3.0, 'C': 2.5, 'H': 2.5, 'M': 2.0,
+        'F': 1.5, 'Y': 1.5, 'N': 1.2, 'Q': 1.2,
+        'D': 1.0, 'E': 1.0, 'K': 1.0, 'R': 1.0,
+        'L': 0.3, 'A': 0.3, 'G': 0.3, 'V': 0.3,
+        'I': 0.3, 'P': 0.3, 'S': 0.3, 'T': 0.3,
+        '_': 0.1,
     }
     
-    # 计算序列的特异性得分
     def get_char_weight(char):
         return SPECIFICITY_WEIGHTS.get(char, 0.3)
     
     best_score = -1
     best_result = None
     
-    # 尝试不同的锚点长度（2-10）
-    for anchor_len in range(2, 11):
-        # 对每个序列尝试所有可能的起始位置
-        # 生成所有序列的位置组合
-        position_combinations = []
+    # 优化：只取前3个序列进行锚点查找（减少搜索空间）
+    working_seqs = seqs[:3] if len(seqs) > 3 else seqs
+    min_len = min(len(seq) for seq in working_seqs)
+    
+    # 尝试不同的锚点长度（2-8）
+    for anchor_len in range(2, min(9, min_len + 1)):
+        # 对每个序列，限制起始位置搜索范围（每隔2个位置取一个）
+        # 这样大大减少组合数量
+        max_combinations_per_seq = 10
         
-        def generate_combinations(seq_idx, current_positions):
-            if seq_idx == len(seqs):
-                position_combinations.append(list(current_positions))
-                return
-            
-            seq = seqs[seq_idx]
-            max_start = len(seq) - anchor_len + 1
-            for start_pos in range(max_start):
-                if start_pos >= 0:
-                    current_positions.append(start_pos)
-                    generate_combinations(seq_idx + 1, current_positions)
-                    current_positions.pop()
+        candidate_positions = []
+        for seq in working_seqs:
+            seq_positions = []
+            for start in range(0, len(seq) - anchor_len + 1, 2):
+                seq_positions.append(start)
+            # 如果太多，随机采样
+            if len(seq_positions) > max_combinations_per_seq:
+                import random
+                seq_positions = random.sample(seq_positions, max_combinations_per_seq)
+            candidate_positions.append(seq_positions)
         
-        generate_combinations(0, [])
+        # 生成位置组合（笛卡尔积）
+        from itertools import product
+        position_combinations = list(product(*candidate_positions))
+        
+        # 限制总组合数
+        if len(position_combinations) > 500:
+            import random
+            position_combinations = random.sample(position_combinations, 500)
         
         for seq_positions in position_combinations:
-            # 检查这个位置组合是否有效
             chars_list = []
             valid = True
             total_specificity_score = 0.0
@@ -726,7 +720,7 @@ def find_best_anchor_for_multiple(seqs):
                 chars = []
                 col_specificity = 0.0
                 
-                for seq_idx, seq in enumerate(seqs):
+                for seq_idx, seq in enumerate(working_seqs):
                     pos_in_seq = seq_positions[seq_idx] + col_idx
                     if pos_in_seq >= len(seq):
                         valid = False
@@ -734,7 +728,6 @@ def find_best_anchor_for_multiple(seqs):
                     
                     char = seq[pos_in_seq]
                     if char == '_':
-                        # 纪律1：下划线作为实体字符参与对齐
                         chars.append('_')
                         col_specificity += get_char_weight(char)
                     elif char in AA_LETTERS:
@@ -747,8 +740,6 @@ def find_best_anchor_for_multiple(seqs):
                 if not valid:
                     break
                 
-                # 检查该列的氨基酸种类（包括下划线）
-                # 下划线不算作氨基酸种类，只作为占位符
                 aa_chars = [c for c in chars if c != '_']
                 unique_aas = set(aa_chars)
                 
@@ -756,7 +747,6 @@ def find_best_anchor_for_multiple(seqs):
                     valid = False
                     break
                 
-                # 计算该列的特异性得分
                 total_specificity_score += col_specificity
                 chars_list.append(chars)
             
@@ -768,12 +758,10 @@ def find_best_anchor_for_multiple(seqs):
             
             if score > best_score:
                 best_score = score
-                # 生成简并核心区域
                 core_parts = []
                 for chars in chars_list:
                     aa_chars = [c for c in chars if c != '_']
                     if len(aa_chars) == 0:
-                        # 该列全是下划线
                         core_parts.append('_')
                     else:
                         unique_aas = set(aa_chars)
@@ -783,9 +771,60 @@ def find_best_anchor_for_multiple(seqs):
                             bracket = ''.join(sorted(unique_aas))
                             core_parts.append(f'[{bracket}]')
                 
-                best_result = (seq_positions, core_parts)
+                best_result = (list(seq_positions), core_parts)
     
-    return best_result
+    # 如果找到了锚点，计算其他序列的位置
+    if best_result is not None:
+        seq_positions, core_parts = best_result
+        
+        # 计算核心区域在参考序列中的起始位置
+        ref_start = seq_positions[0]
+        
+        # 对每个不在working_seqs中的序列，计算对应位置
+        all_positions = []
+        if len(seqs) > 3:
+            # 使用第一个序列作为参考
+            ref_seq = working_seqs[0]
+            core_start = ref_start
+            core_str = ''.join(core_parts).replace('[', '').replace(']', '')
+            
+            for seq in seqs:
+                # 在序列中寻找匹配的核心区域
+                found = False
+                for start in range(len(seq) - len(core_str) + 1):
+                    match = True
+                    core_idx = 0
+                    for i, part in enumerate(core_parts):
+                        if part.startswith('['):
+                            inner = part[1:-1]
+                            for j, c in enumerate(inner):
+                                if start + core_idx >= len(seq):
+                                    match = False
+                                    break
+                                if seq[start + core_idx] != c:
+                                    match = False
+                                    break
+                                core_idx += 1
+                        else:
+                            if start + core_idx >= len(seq):
+                                match = False
+                                break
+                            if seq[start + core_idx] != part:
+                                match = False
+                                break
+                            core_idx += 1
+                    
+                    if match:
+                        all_positions.append(start)
+                        found = True
+                        break
+                
+                if not found:
+                    all_positions.append(0)
+        
+        return (all_positions if all_positions else seq_positions, core_parts)
+    
+    return None
 
 
 def build_dynamic_core(anchor, all_full, anchor_positions):

@@ -2,22 +2,10 @@
   {
     "Fragment_ID": "frag_2",
     "Total_Original_Words": 8106,
-    "Compression_Ratio": 4053.0,
+    "Compression_Ratio": 8106.0,
     "Rules": [
       {
-        "Pattern": "[ILS]-[AL]-[AL]-[AL]-[DL]-[GLV]-[FGL]-x(0,3)",
-        "Average_Score": 0.5943,
-        "Covered_Count": 4,
-        "Covered_Words": [
-          "SALLLVLGLL",
-          "LAAADLLLAL",
-          "ILLLLGG",
-          "ILLLLVF"
-        ],
-        "False_Positive_Rate": 0.0
-      },
-      {
-        "Pattern": "[AT]-L-[AL]-[IL]-[AL]-[AL]-[AL]-[LV]-[AG]-x(0,2)",
+        "Pattern": "[AT]-L-[AL]-[IL]-[AL]-[AL]-[AL]-[LV]-x(1,3)",
         "Average_Score": 0.5064,
         "Covered_Count": 2,
         "Covered_Words": [
@@ -27,78 +15,30 @@
         "False_Positive_Rate": 0.0
       }
     ],
-    "Process_Time_s": 107.96
+    "Process_Time_s": 4.65
   },
   {
     "Fragment_ID": "frag_3",
     "Total_Original_Words": 5814,
-    "Compression_Ratio": 830.57,
+    "Compression_Ratio": 1938.0,
     "Rules": [
       {
-        "Pattern": "x(0,2)-[AL]-[AL]-L-L-L-L-[LR]-x(0,2)",
-        "Average_Score": 0.4715,
-        "Covered_Count": 4,
-        "Covered_Words": [
-          "LLLLLLLLL",
-          "ALLLLLLLV",
-          "LLLLLLL_R",
-          "AALLLLL"
-        ],
-        "False_Positive_Rate": 0.0
-      },
-      {
-        "Pattern": "x(0,3)-[ALT]-[LQ]-[ALS]-[ILS]-[AIL]-[AGL]-[AL]-[LV]-[AGL]-x(0,2)",
-        "Average_Score": 0.667,
-        "Covered_Count": 4,
-        "Covered_Words": [
-          "TLALALALA",
-          "LLALAGLLAI",
-          "ALLILALVGAA",
-          "LILTQSSILALLA"
-        ],
-        "False_Positive_Rate": 0.0
-      },
-      {
-        "Pattern": "L-[LP]-[AL]-[AL]-[AL]-[GLM]-x(0,2)",
-        "Average_Score": 0.5346,
-        "Covered_Count": 4,
-        "Covered_Words": [
-          "LLLALG",
-          "LLLAAL",
-          "LPALLLG",
-          "LLLALM_V"
-        ],
-        "False_Positive_Rate": 0.0002
-      },
-      {
-        "Pattern": "x(0,3)-[LPV]-[ACV]-[ILP]-[AL]-[AGS]-L-[CIY]-[ALV]-[GIL]-[AQV]-x(0,3)",
-        "Average_Score": 0.4231,
-        "Covered_Count": 3,
-        "Covered_Words": [
-          "LALASLIVIA",
-          "AVVPLGLYAGQLAL",
-          "IVIPCILALCLLV"
-        ],
-        "False_Positive_Rate": 0.0
-      },
-      {
-        "Pattern": "[LVY]-[ALV]-[AL]-[LSV]-L-[AV]-x(0,2)",
-        "Average_Score": 0.4595,
-        "Covered_Count": 3,
-        "Covered_Words": [
-          "LALVLV",
-          "YLALLV",
-          "VVLSLALG"
-        ],
-        "False_Positive_Rate": 0.0006
-      },
-      {
-        "Pattern": "L-[LY]-[AV]-[IS]-[AT]-[IN]-[AD]-[LR]-[LY]-x(0,2)",
-        "Average_Score": 0.5869,
+        "Pattern": "x(0,2)-[IV]-[PV]-[CL]-[IS]-L-A-L-[CG]-x(0,3)",
+        "Average_Score": 0.4413,
         "Covered_Count": 2,
         "Covered_Words": [
-          "LLAIAIDRY",
-          "LYVSTNALLAI"
+          "IVIPCILALCLLV",
+          "VVLSLALG"
+        ],
+        "False_Positive_Rate": 0.0
+      },
+      {
+        "Pattern": "[LY]-[AL]-[AL]-[LV]-L-V",
+        "Average_Score": 0.5349,
+        "Covered_Count": 2,
+        "Covered_Words": [
+          "LALVLV",
+          "YLALLV"
         ],
         "False_Positive_Rate": 0.0
       },
@@ -110,45 +50,23 @@
           "CLLL_I",
           "LLLI_E"
         ],
-        "False_Positive_Rate": 0.0
+        "False_Positive_Rate": 0.0004
       }
     ],
-    "Process_Time_s": 481.52
+    "Process_Time_s": 14.41
   },
   {
     "Fragment_ID": "frag_6",
     "Total_Original_Words": 603,
-    "Compression_Ratio": 46.38,
+    "Compression_Ratio": 50.25,
     "Rules": [
       {
-        "Pattern": "[FN]-[IL]-[LV]-[FPV]-[LV]-[LTV]-x(0,2)",
-        "Average_Score": 0.4889,
-        "Covered_Count": 4,
-        "Covered_Words": [
-          "FLLFVVVV",
-          "FLLPLL",
-          "FLLFVV",
-          "NIVVVT"
-        ],
-        "False_Positive_Rate": 0.0
-      },
-      {
-        "Pattern": "x(0,2)-[CV]-[ES]-[GW]-[CG]-[EK]-G-[CF]-[AF]-R-[KR]-x(0,2)",
-        "Average_Score": 0.6835,
+        "Pattern": "[FT]-[AS]-[ST]-[AI]-[MS]-[HI]",
+        "Average_Score": 0.4577,
         "Covered_Count": 2,
         "Covered_Words": [
-          "LTCEGCKGFFRRSI",
-          "VSWGEGCARK"
-        ],
-        "False_Positive_Rate": 0.0002
-      },
-      {
-        "Pattern": "[DI]-F-C-L-[KT]-[FV]-[LM]-[FS]-[HI]-x(0,1)",
-        "Average_Score": 0.5624,
-        "Covered_Count": 2,
-        "Covered_Words": [
-          "DFCLKFLFHG",
-          "IFCLTVMSI"
+          "FSTASI",
+          "TASIMH"
         ],
         "False_Positive_Rate": 0.0
       },
@@ -159,6 +77,16 @@
         "Covered_Words": [
           "L_IIF_A",
           "L_IIG_N"
+        ],
+        "False_Positive_Rate": 0.0
+      },
+      {
+        "Pattern": "I-V-G-G-Y-x(0,1)",
+        "Average_Score": 0.5119,
+        "Covered_Count": 2,
+        "Covered_Words": [
+          "IVGGYT",
+          "IVGGY"
         ],
         "False_Positive_Rate": 0.0
       },
@@ -183,22 +111,22 @@
         "False_Positive_Rate": 0.0
       },
       {
-        "Pattern": "[AT]-[GQ]-[GI]-[IV]-[SV]-[SW]",
-        "Average_Score": 0.7042,
-        "Covered_Count": 2,
-        "Covered_Words": [
-          "TGIVSW",
-          "AQGIVS"
-        ],
-        "False_Positive_Rate": 0.0
-      },
-      {
         "Pattern": "[GS]-[RW]-G-[RY]-[GL]-[CS]-[AP]-[DL]",
         "Average_Score": 0.6337,
         "Covered_Count": 2,
         "Covered_Words": [
           "SWGRGCAL",
           "GRGYLSPD"
+        ],
+        "False_Positive_Rate": 0.0
+      },
+      {
+        "Pattern": "[AT]-[GQ]-[GI]-[IV]-[SV]-[SW]",
+        "Average_Score": 0.7042,
+        "Covered_Count": 2,
+        "Covered_Words": [
+          "TGIVSW",
+          "AQGIVS"
         ],
         "False_Positive_Rate": 0.0
       },
@@ -217,8 +145,8 @@
         "Average_Score": 0.6825,
         "Covered_Count": 2,
         "Covered_Words": [
-          "SIETL",
-          "INIET"
+          "INIET",
+          "SIETL"
         ],
         "False_Positive_Rate": 0.0
       },
@@ -237,8 +165,8 @@
         "Average_Score": 0.4786,
         "Covered_Count": 2,
         "Covered_Words": [
-          "VGR_LN",
-          "GRL_GG"
+          "GRL_GG",
+          "VGR_LN"
         ],
         "False_Positive_Rate": 0.0
       },
@@ -253,118 +181,6 @@
         "False_Positive_Rate": 0.0
       }
     ],
-    "Process_Time_s": 193.09
-  },
-  {
-    "Fragment_ID": "frag_7",
-    "Total_Original_Words": 1967,
-    "Compression_Ratio": 655.67,
-    "Rules": [
-      {
-        "Pattern": "x(0,2)-[AIL]-[AGL]-[AGT]-[AIN]-[AGI]-[AL]-[GIV]",
-        "Average_Score": 0.55,
-        "Covered_Count": 4,
-        "Covered_Words": [
-          "IIAGAGAI",
-          "AGAAAAG",
-          "LTIAGNILV",
-          "LLTIIAV"
-        ],
-        "False_Positive_Rate": 0.0
-      },
-      {
-        "Pattern": "x(0,2)-L-[GLV]-[GL]-[GTV]-[PST]-[LTW]",
-        "Average_Score": 0.447,
-        "Covered_Count": 4,
-        "Covered_Words": [
-          "PILGLGTW",
-          "LLGTPT",
-          "TLGLVSL",
-          "LVLGTL"
-        ],
-        "False_Positive_Rate": 0.0
-      },
-      {
-        "Pattern": "M-_-L-L-[LV]-[TW]-x(0,1)",
-        "Average_Score": 0.6086,
-        "Covered_Count": 2,
-        "Covered_Words": [
-          "M_LLLW",
-          "M_LLVTS"
-        ],
-        "False_Positive_Rate": 0.0
-      }
-    ],
-    "Process_Time_s": 848.53
-  },
-  {
-    "Fragment_ID": "frag_8",
-    "Total_Original_Words": 166,
-    "Compression_Ratio": 27.67,
-    "Rules": [
-      {
-        "Pattern": "[CSV]-V-L-[ILV]-[LRS]-x(0,3)",
-        "Average_Score": 0.4444,
-        "Covered_Count": 4,
-        "Covered_Words": [
-          "SVLVL_LT",
-          "CVLLL",
-          "SVLIS",
-          "VVLVR_T"
-        ],
-        "False_Positive_Rate": 0.0
-      },
-      {
-        "Pattern": "[FL]-[LP]-[NP]-[KN]-[KQ]-[QR]-[RT]-[TV]-x(0,1)",
-        "Average_Score": 0.5665,
-        "Covered_Count": 2,
-        "Covered_Words": [
-          "LPNKQRTVV",
-          "FLPNKQRT"
-        ],
-        "False_Positive_Rate": 0.0
-      },
-      {
-        "Pattern": "x(0,2)-[GV]-[GV]-[AG]-[AG]-[AE]-x(0,2)",
-        "Average_Score": 0.5612,
-        "Covered_Count": 2,
-        "Covered_Words": [
-          "VVGGAAE_L",
-          "VVGGA"
-        ],
-        "False_Positive_Rate": 0.0002
-      },
-      {
-        "Pattern": "[CK]-[RS]-[AS]-[AI]-[IW]-x(0,1)",
-        "Average_Score": 0.3784,
-        "Covered_Count": 2,
-        "Covered_Words": [
-          "CSAIWS",
-          "KRSAI"
-        ],
-        "False_Positive_Rate": 0.0
-      },
-      {
-        "Pattern": "S-L-[IY]-[MS]-L-x(0,1)",
-        "Average_Score": 0.5729,
-        "Covered_Count": 2,
-        "Covered_Words": [
-          "SLYSLI",
-          "SLIML"
-        ],
-        "False_Positive_Rate": 0.0
-      },
-      {
-        "Pattern": "x(0,1)-[GW]-[VW]-[LV]-[LS]-[FT]",
-        "Average_Score": 0.503,
-        "Covered_Count": 2,
-        "Covered_Words": [
-          "VWVLSF",
-          "GWVLT"
-        ],
-        "False_Positive_Rate": 0.0
-      }
-    ],
-    "Process_Time_s": 16.66
+    "Process_Time_s": 11.42
   }
 ]
