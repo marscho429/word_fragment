@@ -1,33 +1,70 @@
 """
-引擎模块
+蛋白词-分子片段规则优化模块
 """
 
-from .data_classes import MotifCandidate, OptimizationResult, FragmentResult, PipelineResult
-from .motif_utils import (
-    convert_motif_to_regex, match_words_with_motif,
-    compute_wildcard_ratio, is_valid_wildcard_ratio,
-    levenshtein_distance, align_to_longest,
-    compute_position_entropy
+from .core import (
+    RuleElement, GeneralizationRule, RuleElementType,
+    TIERED_SEMANTIC_GROUPS, AMINO_ACID_TO_PROPERTIES, ALL_AMINO_ACIDS,
+    get_best_property_for_amino_acids, parse_word,
+    create_exact_element, create_property_element, create_optional_element,
+    create_wildcard_fixed_element, create_wildcard_range_element,
+    create_wildcard_any_element, create_choice_element
 )
-from .strategies import (
-    strategy_msa, strategy_frequency, strategy_clustering,
-    strategy_greedy, strategy_chemical, strategy_aggressive
+
+from .preprocess import (
+    ProcessedWord, preprocess_word, preprocess_words,
+    group_words_by_length, find_similar_words,
+    calculate_amino_overlap, longest_common_subsequence_length,
+    extract_common_pattern, cluster_words_by_pattern,
+    find_word_pairs_with_high_overlap, get_negative_sample_pool
 )
-from .optimizer import (
-    optimize_greedy, optimize_ilp, optimize_dp,
-    compute_pareto_frontier, select_recommended
+
+from .generalize import (
+    AlignmentResult, align_words, generate_rule_from_alignment,
+    mine_high_quality_rules, find_word_group,
+    optimize_rule_coverage, generate_rules_for_fragment
 )
-from .pipeline import process_fragment, run_pipeline
-from .main import main
+
+from .validate import (
+    RuleValidator, match_word_with_rule, validate_rule_against_original_words,
+    calculate_fpr_for_rule, calculate_fpr_for_rule_set,
+    evaluate_rule_quality, validate_rule_set, filter_rules_by_quality,
+    compute_coverage_metrics
+)
+
+from .pipeline import (
+    FragmentResult, PipelineResult, load_data,
+    process_single_fragment, run_pipeline, main
+)
 
 __all__ = [
-    'MotifCandidate', 'OptimizationResult', 'FragmentResult', 'PipelineResult',
-    'convert_motif_to_regex', 'match_words_with_motif',
-    'compute_wildcard_ratio', 'is_valid_wildcard_ratio',
-    'levenshtein_distance', 'align_to_longest', 'compute_position_entropy',
-    'strategy_msa', 'strategy_frequency', 'strategy_clustering',
-    'strategy_greedy', 'strategy_chemical', 'strategy_aggressive',
-    'optimize_greedy', 'optimize_ilp', 'optimize_dp',
-    'compute_pareto_frontier', 'select_recommended',
-    'process_fragment', 'run_pipeline', 'main',
+    # Core
+    'RuleElement', 'GeneralizationRule', 'RuleElementType',
+    'TIERED_SEMANTIC_GROUPS', 'AMINO_ACID_TO_PROPERTIES', 'ALL_AMINO_ACIDS',
+    'get_best_property_for_amino_acids', 'parse_word',
+    'create_exact_element', 'create_property_element', 'create_optional_element',
+    'create_wildcard_fixed_element', 'create_wildcard_range_element',
+    'create_wildcard_any_element', 'create_choice_element',
+    
+    # Preprocess
+    'ProcessedWord', 'preprocess_word', 'preprocess_words',
+    'group_words_by_length', 'find_similar_words',
+    'calculate_amino_overlap', 'longest_common_subsequence_length',
+    'extract_common_pattern', 'cluster_words_by_pattern',
+    'find_word_pairs_with_high_overlap', 'get_negative_sample_pool',
+    
+    # Generalize
+    'AlignmentResult', 'align_words', 'generate_rule_from_alignment',
+    'mine_high_quality_rules', 'find_word_group',
+    'optimize_rule_coverage', 'generate_rules_for_fragment',
+    
+    # Validate
+    'RuleValidator', 'match_word_with_rule', 'validate_rule_against_original_words',
+    'calculate_fpr_for_rule', 'calculate_fpr_for_rule_set',
+    'evaluate_rule_quality', 'validate_rule_set', 'filter_rules_by_quality',
+    'compute_coverage_metrics',
+    
+    # Pipeline
+    'FragmentResult', 'PipelineResult', 'load_data',
+    'process_single_fragment', 'run_pipeline', 'main',
 ]
