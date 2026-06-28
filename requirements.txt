@@ -1,15 +1,4 @@
-numpy
-pandas
-rdkit
-scipy
-scikit-learn
-python-Levenshtein
-joblib
-pathlib
-matplotlib
-pillow
-tqdm
-torch
-tensorboard
-biopython
-pulp
+# C++ 模块编译依赖
+pybind11
+
+# 运行依赖（标准库即可，此文件仅作参考）

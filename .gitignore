@@ -1,8 +1,11 @@
-# 忽略整个 data 文件夹及其里面的所有内容
-data/
 
-# 忽略所有的 csv 文件
-*.csv
+# 忽略输出结果目录
+outputs/
 
-# 忽略所有的 pkl 模型缓存文件
-*.pkl
+# 忽略编译后的 C++ 模块
+*.so
+
+# 忽略 Python 缓存
+__pycache__/
+*.pyc
+*.pyo
